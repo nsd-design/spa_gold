@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'operation_fournisseur',
     'bank',
     'utilisateurs',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -69,13 +70,14 @@ WSGI_APPLICATION = 'goldseller.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'or_db',
+        'NAME': 'spa_gold_db',
         'USER': 'postgres',
         'PASSWORD': 'N$2_1b@t@ble',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
+
 
 
 # Password validation
