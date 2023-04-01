@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from utilisateurs.models import Utilisateur
 from .serializers import *
 
 
@@ -12,8 +13,9 @@ class FournisseurViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     def create_f(self, request, pk=None):
         if 'telephone' in request.data:
-
             fournisseur = Fournisseur.objects.get(id=pk)
+            user = Utilisateur.objects.get(id=1)
+            print("User", user.username)
             print("Fournisseur ", fournisseur.nom, " ", fournisseur.prenom)
 
             response = {"message": "Succès"}
