@@ -14,8 +14,8 @@ class Client(models.Model):
     pays = models.CharField(max_length=25)
     ville = models.CharField(max_length=25)
     adresse = models.CharField(max_length=40)
-    telephone = models.CharField(max_length=14, null=False)
-    email = models.CharField(max_length=128)
+    telephone = models.CharField(max_length=14, null=False, unique=True)
+    email = models.CharField(max_length=128, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.IntegerField(null=False, default=1)
@@ -37,7 +37,7 @@ class CompteClient(models.Model):
         (2, "USD"),
     ]
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    numero_compte = models.CharField(max_length=12)
+    numero_compte = models.CharField(max_length=12, unique=True)
     devise = models.IntegerField(choices=devises)
     status = models.IntegerField(choices=status_values, default=1, null=False)
 
