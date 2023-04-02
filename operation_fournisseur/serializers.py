@@ -6,7 +6,7 @@ from .models import *
 class FournisseurSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fournisseur
-        fields = ('nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville')
+        fields = ('id', 'nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville')
 
 
 class AchatSerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class LotArrivageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AttributionSerialzer(serializers.ModelSerializer):
+class AttributionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attribution
         fields = '__all__'

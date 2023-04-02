@@ -95,7 +95,7 @@ class LotArrivage(models.Model):
         (2, "Clôturé"),
         (3, "Supprimé"),
     ]
-    designation = models.CharField(max_length=28)
+    designation = models.CharField(max_length=28, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.IntegerField(null=False, default=1)

@@ -1,9 +1,12 @@
+from django.http import HttpResponse
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from utilisateurs.models import Utilisateur
 from .serializers import *
+from django.core import serializers
 
 
 class FournisseurViewSet(viewsets.ModelViewSet):
@@ -46,8 +49,8 @@ class LotArrivageViewSet(viewsets.ModelViewSet):
 
 
 class AttributionViewSet(viewsets.ModelViewSet):
-    queryset = Attribution.objects.all()
-    serializer_class = AttributionSerialzer
+    queryset = Attribution.objects.filter()
+    serializer_class = AttributionSerializer
 
 
 class FixingViewSet(viewsets.ModelViewSet):
