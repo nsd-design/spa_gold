@@ -1,5 +1,7 @@
 from django.db import models
 
+from utilisateurs.models import Utilisateur
+
 
 class Fournisseur(models.Model):
     status_values = [
@@ -16,9 +18,9 @@ class Fournisseur(models.Model):
     email = models.CharField(max_length=128, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.prenom} {self.nom} {self.telephone}"
@@ -37,9 +39,9 @@ class Achat(models.Model):
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
 
 class CompteFournisseur(models.Model):
@@ -57,9 +59,9 @@ class CompteFournisseur(models.Model):
     devise = models.IntegerField(choices=devises, null=False)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.numero_compte_fournis} {self.fournisseur}"
@@ -84,9 +86,9 @@ class OperationCompteFournis(models.Model):
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
 
 class LotArrivage(models.Model):
@@ -98,9 +100,9 @@ class LotArrivage(models.Model):
     designation = models.CharField(max_length=28, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.designation}"
@@ -119,9 +121,9 @@ class Attribution(models.Model):
 
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.arrivage} {self.nombre_barre}"
@@ -140,6 +142,6 @@ class Fixing(models.Model):
     fixing_bourse = models.FloatField()
 
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)

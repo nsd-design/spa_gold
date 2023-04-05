@@ -1,6 +1,7 @@
 from django.db import models
 
 from operation_fournisseur.models import Fournisseur
+from utilisateurs.models import Utilisateur
 
 
 class Client(models.Model):
@@ -18,9 +19,9 @@ class Client(models.Model):
     email = models.CharField(max_length=128, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.raison_sociale} {self.responsable}"
@@ -42,9 +43,9 @@ class CompteClient(models.Model):
     status = models.IntegerField(choices=status_values, default=1, null=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.numero_compte} {self.client}"
@@ -69,9 +70,9 @@ class OperationCompteClient(models.Model):
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.type_operation} {self.compte_client}"
@@ -88,9 +89,9 @@ class FactureExpedition(models.Model):
     carrat_moyen = models.IntegerField()
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
 
 class Expedition(models.Model):
@@ -120,7 +121,7 @@ class Vente(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.IntegerField(null=False, default=1)
+    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.IntegerField(null=True)
+    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
 
