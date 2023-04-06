@@ -18,9 +18,9 @@ class Particulier(models.Model):
     email = models.CharField(max_length=128, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_particuliers', on_delete=models.CASCADE)
 
 
 class CompteParticulier(models.Model):
@@ -38,9 +38,9 @@ class CompteParticulier(models.Model):
     devise = models.IntegerField(choices=devises, null=False)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_comptes_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_particuliers', on_delete=models.CASCADE)
 
 
 class OperationParticulier(models.Model):
@@ -61,6 +61,6 @@ class OperationParticulier(models.Model):
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_operations_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_particuliers', on_delete=models.CASCADE)
