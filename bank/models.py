@@ -20,7 +20,7 @@ class Particulier(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_particuliers', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_particuliers', null=True, on_delete=models.CASCADE)
 
 
 class CompteParticulier(models.Model):
@@ -40,7 +40,7 @@ class CompteParticulier(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_comptes_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_particuliers', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_particuliers', null=True, on_delete=models.CASCADE)
 
 
 class OperationParticulier(models.Model):
@@ -62,4 +62,4 @@ class OperationParticulier(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_operations_particuliers', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_particuliers', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_particuliers', null=True, on_delete=models.CASCADE)

@@ -22,7 +22,7 @@ class Client(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_clients', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_clients', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_clients', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.raison_sociale} {self.responsable}"
@@ -46,7 +46,7 @@ class CompteClient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_comptes_clients', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_clients', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_clients', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.numero_compte} {self.client}"
@@ -72,7 +72,7 @@ class OperationCompteClient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_operations_comptes_clients', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_comptes_clients', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_comptes_clients', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.type_operation} {self.compte_client}"
@@ -91,7 +91,7 @@ class FactureExpedition(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_factures_expeditions', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_factures_expeditions', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_factures_expeditions', null=True, on_delete=models.CASCADE)
 
 
 class Expedition(models.Model):
@@ -106,7 +106,7 @@ class Expedition(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_expeditions', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_expeditions', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_expeditions', null=True, on_delete=models.CASCADE)
 
 
 class Vente(models.Model):
@@ -126,5 +126,5 @@ class Vente(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_ventes', on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_ventes', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(Utilisateur, related_name='updated_ventes', null=True, on_delete=models.CASCADE)
 

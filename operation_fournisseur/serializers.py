@@ -6,7 +6,7 @@ from .models import *
 class FournisseurSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fournisseur
-        fields = ('id', 'nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville')
+        fields = ('id', 'nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville', 'created_by', 'created_at', 'updated_by', 'updated_at')
 
 
 class AchatSerializer(serializers.ModelSerializer):

@@ -13,6 +13,11 @@ class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all()
     serializer_class = FournisseurSerializer
 
+    def perform_create(self, serializer):
+        """Create new Fournisseur"""
+        serializer.save(created_by=self.request.user)
+
+
     @action(detail=True, methods=['POST'])
     def create_f(self, request, pk=None):
         if 'telephone' in request.data:
