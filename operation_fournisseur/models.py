@@ -32,9 +32,9 @@ class Achat(models.Model):
         (2, "Validé"),
     ]
     poids_achat = models.FloatField()
-    carrat_achat = models.IntegerField()
-    prix_unit_achat = models.BigIntegerField()
-    montant_achat = models.BigIntegerField()
+    carrat_achat = models.FloatField()
+    prix_unit_achat = models.FloatField()
+    manquant = models.FloatField(null=True)
     slug = models.CharField(max_length=12, null=False)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
@@ -81,7 +81,6 @@ class OperationCompteFournis(models.Model):
     ]
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_fournis = models.ForeignKey(CompteFournisseur, on_delete=models.CASCADE)
-    montant = models.BigIntegerField(null=False)
     taux = models.FloatField(null=True)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)

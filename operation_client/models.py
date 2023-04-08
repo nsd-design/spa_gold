@@ -66,7 +66,6 @@ class OperationCompteClient(models.Model):
     ]
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_client = models.ForeignKey(CompteClient, on_delete=models.CASCADE)
-    montant = models.BigIntegerField(null=False)
     taux = models.FloatField(null=True)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
@@ -87,7 +86,7 @@ class FactureExpedition(models.Model):
     fournisseur_exp = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     poids_exp = models.FloatField(null=False)
     slug = models.CharField(max_length=12, null=False)
-    carrat_moyen = models.IntegerField()
+    carrat_moyen = models.FloatField()
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_factures_expeditions', on_delete=models.CASCADE)
@@ -117,10 +116,9 @@ class Vente(models.Model):
         (3, "Annulée"),
     ]
     poids = models.FloatField()
-    carrat = models.IntegerField()
+    carrat = models.FloatField()
     densite = models.FloatField()
-    prix_unit_vente = models.BigIntegerField()
-    montant = models.BigIntegerField()
+    prix_unit_vente = models.FloatField()
     fixing_bourse = models.FloatField()
     discompte = models.FloatField()
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
