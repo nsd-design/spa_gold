@@ -52,6 +52,13 @@ class FournisseurViewSet(viewsets.ModelViewSet):
 class AchatViewSet(viewsets.ModelViewSet):
     queryset = Achat.objects.all()
     serializer_class = AchatSerializer
+    authentication_classes = [TokenAuthentication]
+
+    def perform_create(self, serializer):
+        """Effectuer un achat"""
+        user = self.request.user
+        print(user)
+        serializer.save(created_by=user)
 
 
 class CompteFournisseurViewSet(viewsets.ModelViewSet):

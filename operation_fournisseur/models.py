@@ -18,7 +18,7 @@ class Fournisseur(models.Model):
     email = models.CharField(max_length=128, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_fournisseurs', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_fournisseurs', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_fournisseurs', null=True, on_delete=models.CASCADE)
 
@@ -39,7 +39,7 @@ class Achat(models.Model):
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_achats', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_achats', null=True, on_delete=models.CASCADE)
 
@@ -59,7 +59,7 @@ class CompteFournisseur(models.Model):
     devise = models.IntegerField(choices=devises, null=False)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_comptes_fournisseurs', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_comptes_fournisseurs', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_comptes_fournisseurs', null=True, on_delete=models.CASCADE)
 
@@ -85,7 +85,7 @@ class OperationCompteFournis(models.Model):
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_operations_comptes_fournis', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_operations_comptes_fournis', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_operations_comptes_fournis', null=True, on_delete=models.CASCADE)
 
@@ -99,7 +99,7 @@ class LotArrivage(models.Model):
     designation = models.CharField(max_length=28, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_lots_arrivages', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_lots_arrivages', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_lots_arrivages', null=True, on_delete=models.CASCADE)
 
@@ -120,7 +120,7 @@ class Attribution(models.Model):
 
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_attributions', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_attributions', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_attributions', null=True, on_delete=models.CASCADE)
 
@@ -141,6 +141,6 @@ class Fixing(models.Model):
     fixing_bourse = models.FloatField()
 
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_fixings', null=True, on_delete=models.CASCADE)
