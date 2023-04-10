@@ -1,8 +1,9 @@
-from django.http import HttpResponse
+from datetime import datetime
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.authentication import TokenAuthentication
 
 from utilisateurs.models import Utilisateur
 from .serializers import *
@@ -12,10 +13,25 @@ from django.core import serializers
 class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all()
     serializer_class = FournisseurSerializer
+    authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         """Create new Fournisseur"""
-        serializer.save(created_by=self.request.user)
+        user = self.request.user
+        serializer.save(created_by=user)
+
+    # @action(detail=True, methods=['PUT'])
+    # def update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_update(serializer)
+    #     return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        date_time = datetime.now()
+        serializer.save(updated_by=user, updated_at=date_time)
 
 
     @action(detail=True, methods=['POST'])

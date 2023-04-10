@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'bank',
     'utilisateurs',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
 ]
 
