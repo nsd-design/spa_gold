@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 from utilisateurs.models import Utilisateur
@@ -31,17 +33,21 @@ class Achat(models.Model):
         (1, "En cours"),
         (2, "Validé"),
     ]
-    poids_achat = models.FloatField()
-    carrat_achat = models.FloatField()
-    prix_unit_achat = models.FloatField()
-    manquant = models.FloatField(null=True)
-    slug = models.CharField(max_length=12, null=False)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
+    slug = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
-    updated_at = models.DateTimeField(null=True)
-    updated_by = models.ForeignKey(Utilisateur, related_name='updated_achats', null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.slug}, {self.fournisseur}"
+
+
+class AchatItems(models.Model):
+    poids_achat = models.FloatField()
+    carrat_achat = models.FloatField()
+    manquant = models.FloatField(null=True)
+    achat = models.ForeignKey(Achat, related_name="achat_achat_items", null=True, blank=True, on_delete=models.CASCADE)
 
 
 class CompteFournisseur(models.Model):

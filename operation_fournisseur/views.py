@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -13,12 +14,14 @@ from django.core import serializers
 class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all()
     serializer_class = FournisseurSerializer
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         """Create new Fournisseur"""
         user = self.request.user
-        serializer.save(created_by=user)
+        print("User est :", user)
+        # serializer.save(created_by=user)
+        serializer.save()
 
     # @action(detail=True, methods=['PUT'])
     # def update(self, request, *args, **kwargs):
@@ -31,7 +34,8 @@ class FournisseurViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user
         date_time = datetime.now()
-        serializer.save(updated_by=user, updated_at=date_time)
+        # serializer.save(updated_by=user, updated_at=date_time)
+        serializer.save(updated_at=date_time)
 
 
     @action(detail=True, methods=['POST'])
@@ -52,13 +56,60 @@ class FournisseurViewSet(viewsets.ModelViewSet):
 class AchatViewSet(viewsets.ModelViewSet):
     queryset = Achat.objects.all()
     serializer_class = AchatSerializer
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         """Effectuer un achat"""
         user = self.request.user
-        print(user)
-        serializer.save(created_by=user)
+        # serializer.save(created_by=user)
+        serializer.save()
+
+    def get_queryset(self):
+        queryset = Achat.objects.all()
+
+        slug = self.request.query_params.get('slug')
+        if slug:
+            queryset = queryset.filter(slug=slug)
+            return queryset
+
+        start_date = self.request.query_params.get('startDate')
+        end_date = self.request.query_params.get('endDate')
+        if start_date or end_date:
+            date_debut = float(start_date) / 1000
+            date_fin = end_date
+            date_debut_to_local_date = datetime.fromtimestamp(date_debut)
+            if date_fin:
+                date_fin = datetime.fromtimestamp(float(date_fin) / 1000)
+                qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
+                print("Result QS =", qs)
+                return qs
+            elif date_debut_to_local_date:
+                qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
+                return qs
+        return queryset
+
+    def perform_update(self, serializer):
+        date_time = timezone.now()
+        req = self.request.query_params
+        req_data = self.request.data
+        print("Req =", req)
+        print("Req data =", req_data)
+        # serializer.save(updated_by=self.request.user, updated_at=date_time)
+        serializer.save(updated_at=date_time)
+
+
+class AchatItemsVieSet(viewsets.ModelViewSet):
+    queryset = AchatItems.objects.all()
+    serializer_class = AchatItemsSerializer
+    # authentication_classes = [TokenAuthentication]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        print("user =", user)
+        achat = self.request.data['achat']
+        print("Achat in achat items =", achat)
+        # serializer.save(achat=achat)
+        serializer.save()
 
 
 class CompteFournisseurViewSet(viewsets.ModelViewSet):
