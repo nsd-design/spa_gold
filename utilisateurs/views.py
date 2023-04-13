@@ -7,3 +7,4 @@ from .serializers import UtilisateurSerializer
 class UtilisateurViewSet(viewsets.ModelViewSet):
     queryset = Utilisateur.objects.all()
     serializer_class = UtilisateurSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']

@@ -14,6 +14,7 @@ from django.core import serializers
 class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all()
     serializer_class = FournisseurSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
     # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
@@ -56,6 +57,7 @@ class FournisseurViewSet(viewsets.ModelViewSet):
 class AchatViewSet(viewsets.ModelViewSet):
     queryset = Achat.objects.all()
     serializer_class = AchatSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
     # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
@@ -63,6 +65,10 @@ class AchatViewSet(viewsets.ModelViewSet):
         user = self.request.user
         # serializer.save(created_by=user)
         serializer.save()
+
+    # def get(self):
+    #     achat_by_user = Achat.objects.filter(created_by=self.request.user).order_by("-created_at").first()
+    #     return achat_by_user
 
     def get_queryset(self):
         queryset = Achat.objects.all()
@@ -101,6 +107,7 @@ class AchatViewSet(viewsets.ModelViewSet):
 class AchatItemsVieSet(viewsets.ModelViewSet):
     queryset = AchatItems.objects.all()
     serializer_class = AchatItemsSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
     # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
@@ -111,6 +118,16 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
         # serializer.save(achat=achat)
         serializer.save()
 
+    def get_queryset(self):
+        queryset = Achat.objects.all()
+
+        slug = self.request.query_params.get('slug')
+        if slug:
+            queryset = queryset.filter(slug=slug)
+            return queryset
+
+        return queryset
+
 
 class CompteFournisseurViewSet(viewsets.ModelViewSet):
     queryset = CompteFournisseur.objects.all()
@@ -120,19 +137,23 @@ class CompteFournisseurViewSet(viewsets.ModelViewSet):
 class OperationCompteFournisViewSet(viewsets.ModelViewSet):
     queryset = OperationCompteFournis.objects.all()
     serializer_class = OperationCompteFournisSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
 
 class LotArrivageViewSet(viewsets.ModelViewSet):
     queryset = LotArrivage.objects.all()
     serializer_class = LotArrivageSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
 
 class AttributionViewSet(viewsets.ModelViewSet):
     queryset = Attribution.objects.filter()
     serializer_class = AttributionSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
 
 class FixingViewSet(viewsets.ModelViewSet):
     queryset = Fixing.objects.all()
     serializer_class = FixingSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
