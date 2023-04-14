@@ -89,7 +89,7 @@ class AchatViewSet(viewsets.ModelViewSet):
                 qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
                 print("Result QS =", qs)
                 return qs
-            elif date_debut_to_local_date:
+            elif start_date:
                 qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
                 return qs
         return queryset
@@ -119,7 +119,7 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
         serializer.save()
 
     def get_queryset(self):
-        queryset = Achat.objects.all()
+        queryset = AchatItems.objects.all()
 
         slug = self.request.query_params.get('slug')
         if slug:
@@ -132,6 +132,16 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
 class CompteFournisseurViewSet(viewsets.ModelViewSet):
     queryset = CompteFournisseur.objects.all()
     serializer_class = CompteFournisseurSerializer
+
+    def get_queryset(self):
+        comptes_fournisseurs = CompteFournisseur.objects.all()
+        id_fournisseur = self.request.query_params.get('fournisseur')
+
+        if id_fournisseur:
+            compte_by_fournisseur = comptes_fournisseurs.filter(fournisseur=id_fournisseur)
+            return compte_by_fournisseur
+
+        return comptes_fournisseurs
 
 
 class OperationCompteFournisViewSet(viewsets.ModelViewSet):
