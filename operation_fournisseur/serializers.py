@@ -69,7 +69,7 @@ class AttributionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         self.fields['arrivage'] = LotArrivageSerializer()
-        return super(AttributionSerializer, self).to_representation()
+        return super(AttributionSerializer, self).to_representation(instance)
 
 
 class FixingSerializer(serializers.ModelSerializer):
@@ -80,4 +80,4 @@ class FixingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         self.fields['fournisseur'] = FournisseurSerializer()
-        return super(FixingSerializer, self).to_representation()
+        return super(FixingSerializer, self).to_representation(instance)
