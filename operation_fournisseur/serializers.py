@@ -15,6 +15,7 @@ class FournisseurSerializer(serializers.ModelSerializer):
 class AchatSerializer(serializers.ModelSerializer):
     fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
     created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+
     class Meta:
         model = Achat
         fields = '__all__'
@@ -27,11 +28,9 @@ class AchatSerializer(serializers.ModelSerializer):
 
 class AchatItemsSerializer(serializers.ModelSerializer):
     achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
-    
+
     def to_representation(self, instance):
         self.fields['achat'] = AchatSerializer()
-        self.fields['created_by'] = UtilisateurSerializer()
         return super(AchatItemsSerializer, self).to_representation(instance)
 
     class Meta:
