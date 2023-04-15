@@ -9,7 +9,7 @@ class FournisseurSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fournisseur
-        fields = ('id', 'nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville')
+        fields = ('id', 'nom', 'prenom', 'adresse', 'telephone', 'email', 'pays', 'ville', 'created_by')
 
 
 class AchatSerializer(serializers.ModelSerializer):
