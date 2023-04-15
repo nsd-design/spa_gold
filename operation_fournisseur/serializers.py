@@ -33,15 +33,26 @@ class AchatItemsSerializer(serializers.ModelSerializer):
 
 
 class CompteFournisseurSerializer(serializers.ModelSerializer):
+    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
     class Meta:
         model = CompteFournisseur
         fields = '__all__'
 
+    def to_representation(self, instance):
+        self.fields['fournisseur'] = FournisseurSerializer()
+        return super(CompteFournisseurSerializer, self).to_representation(instance)
+
 
 class OperationCompteFournisSerializer(serializers.ModelSerializer):
+    compte_fournis = serializers.PrimaryKeyRelatedField(queryset=CompteFournisseur.objects.all())
+
     class Meta:
         model = OperationCompteFournis
         fields = '__all__'
+
+    def to_representation(self, instance):
+        self.fields['compte_fournis'] = CompteFournisseurSerializer()
+        return super(OperationCompteFournisSerializer, self).to_representation(instance)
 
 
 class LotArrivageSerializer(serializers.ModelSerializer):
@@ -51,12 +62,22 @@ class LotArrivageSerializer(serializers.ModelSerializer):
 
 
 class AttributionSerializer(serializers.ModelSerializer):
+    arrivage = serializers.PrimaryKeyRelatedField(queryset=LotArrivage.objects.all())
     class Meta:
         model = Attribution
         fields = '__all__'
 
+    def to_representation(self, instance):
+        self.fields['arrivage'] = LotArrivageSerializer()
+        return super(AttributionSerializer, self).to_representation()
+
 
 class FixingSerializer(serializers.ModelSerializer):
+    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
     class Meta:
         model = Fixing
         fields = '__all__'
+
+    def to_representation(self, instance):
+        self.fields['fournisseur'] = FournisseurSerializer()
+        return super(FixingSerializer, self).to_representation()

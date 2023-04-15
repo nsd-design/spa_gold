@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from operation_fournisseur.models import Fournisseur
+from operation_fournisseur.models import Fournisseur, Achat
 from utilisateurs.models import Utilisateur
 
 
@@ -115,13 +115,12 @@ class Vente(models.Model):
         (2, "Validée"),
         (3, "Annulée"),
     ]
-    poids = models.FloatField()
-    carrat = models.FloatField()
-    densite = models.FloatField()
-    prix_unit_vente = models.FloatField()
+
+    densite = models.FloatField(default=22)
     fixing_bourse = models.FloatField()
-    discompte = models.FloatField()
+    discount = models.FloatField()
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    achat = models.ForeignKey(Achat, related_name='achat_vente', on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_ventes', null=True, on_delete=models.CASCADE)

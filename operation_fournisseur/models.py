@@ -118,11 +118,8 @@ class Attribution(models.Model):
         (1, "Placée"),
     ]
 
-    nombre_barre = models.IntegerField(null=False)
-    poids_achete = models.FloatField(null=True)
-    poids_vendu = models.FloatField(null=True)
-    poids_restant = models.FloatField(null=True)
     arrivage = models.ForeignKey(LotArrivage, on_delete=models.CASCADE)
+    achat = models.ForeignKey(Achat, related_name='achat_attribution', on_delete=models.CASCADE)
 
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
