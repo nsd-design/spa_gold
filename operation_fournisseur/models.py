@@ -142,6 +142,7 @@ class Fixing(models.Model):
     status = models.IntegerField(choices=status_values, default=1, null=False)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     fixing_bourse = models.FloatField()
+    discount = models.FloatField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
