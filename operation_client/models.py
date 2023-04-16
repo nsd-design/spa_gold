@@ -119,6 +119,8 @@ class Vente(models.Model):
     densite = models.FloatField(default=22)
     fixing_bourse = models.FloatField()
     discount = models.FloatField()
+    poids_fixe = models.FloatField()
+    carrat_moyen = models.FloatField()
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     achat = models.ForeignKey(Achat, related_name='achat_vente', on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
