@@ -80,7 +80,7 @@ class AchatViewSet(viewsets.ModelViewSet):
 
         start_date = self.request.query_params.get('startDate')
         end_date = self.request.query_params.get('endDate')
-        if start_date == 'undefined' and not start_date == '':
+        if not start_date == 'undefined' and not start_date == '':
             # Converting start date
             date_debut = float(start_date) / 1000
             date_debut_to_local_date = datetime.fromtimestamp(date_debut).date()
