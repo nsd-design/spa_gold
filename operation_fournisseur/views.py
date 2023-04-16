@@ -80,19 +80,21 @@ class AchatViewSet(viewsets.ModelViewSet):
 
         start_date = self.request.query_params.get('startDate')
         end_date = self.request.query_params.get('endDate')
-        if start_date or end_date:
+        if start_date == 'undefined' and not start_date == '':
+            # Converting start date
             date_debut = float(start_date) / 1000
-            date_fin = end_date
-            date_debut_to_local_date = datetime.fromtimestamp(date_debut)
-            if date_fin:
-                date_fin = datetime.fromtimestamp(float(date_fin) / 1000)
-                qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
-                print("Result QS =", qs)
+            date_debut_to_local_date = datetime.fromtimestamp(date_debut).date()
+
+            if not end_date == 'undefined' and not end_date == '':
+                # Converting end date
+                date_fin = datetime.fromtimestamp(float(end_date) / 1000).astimezone()
+                qs = queryset.filter(created_at__date=date_debut_to_local_date, created_at__lt=date_fin).select_related('fournisseur')
+                # print("Resultat QS", qs)
                 return qs
-            elif start_date:
-                qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lte=date_fin).select_related('fournisseur')
+            elif date_debut_to_local_date:
+                qs = queryset.filter(created_at__date=date_debut_to_local_date).select_related('fournisseur')
                 return qs
-        return queryset
+        # return queryset
 
     def perform_update(self, serializer):
         date_time = timezone.now()
