@@ -88,7 +88,7 @@ class AchatViewSet(viewsets.ModelViewSet):
             if not end_date == 'undefined' and not end_date == '':
                 # Converting end date
                 date_fin = datetime.fromtimestamp(float(end_date) / 1000).astimezone()
-                qs = queryset.filter(created_at__date=date_debut_to_local_date, created_at__lt=date_fin).select_related('fournisseur')
+                qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lt=date_fin).select_related('fournisseur')
                 # print("Resultat QS", qs)
                 return qs
             elif date_debut_to_local_date:
