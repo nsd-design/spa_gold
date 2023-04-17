@@ -11,7 +11,7 @@ router.register("operation_compte_client", OperationCompteClientViewSet)
 router.register("facture_expedition", FactureExpeditionViewSet)
 router.register("expedition", ExpeditionViewSet)
 router.register("vente", VenteViewSet)
-router.register("vente/vente_detail", VenteDetailViewSet)
+router.register("vente_detail", VenteDetailViewSet)
 
 urlpatterns = [
     path("", include(router.urls))
