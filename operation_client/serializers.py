@@ -85,3 +85,15 @@ class VenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vente
         fields = '__all__'
+
+
+class VenteDetailSerializer(serializers.ModelSerializer):
+    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
+
+    def to_representation(self, instance):
+        self.fields['client'] = ClientSerializer()
+        return super(VenteDetailSerializer, self).to_representation(instance)
+
+    class Meta:
+        model = VenteDetail
+        fields = '__all__'

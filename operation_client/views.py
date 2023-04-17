@@ -39,3 +39,15 @@ class VenteViewSet(viewsets.ModelViewSet):
     queryset = Vente.objects.all()
     serializer_class = VenteSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+    # authentication_classes = [TokenAuthentication]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        # serializer.save(created_by=user)
+        serializer.save()
+
+
+class VenteDetailViewSet(viewsets.ModelViewSet):
+    queryset = VenteDetail.objects.all()
+    serializer_class = VenteDetailSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
