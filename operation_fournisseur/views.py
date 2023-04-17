@@ -95,7 +95,7 @@ class AchatViewSet(viewsets.ModelViewSet):
                 elif date_debut_to_local_date:
                     qs = queryset.filter(created_at__date=date_debut_to_local_date).select_related('fournisseur')
                     return qs
-        # return queryset
+        return queryset
 
     def perform_update(self, serializer):
         date_time = timezone.now()

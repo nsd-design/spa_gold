@@ -35,8 +35,8 @@ class Achat(models.Model):
     ]
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     slug = models.UUIDField(max_length=255, default=uuid.uuid4, editable=False, unique=True)
-    poids_total = models.FloatField()
-    carra_moyen = models.FloatField()
+    poids_total = models.FloatField(null=True, blank=True)
+    carrat_moyen = models.FloatField(null=True, blank=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
