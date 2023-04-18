@@ -116,14 +116,6 @@ class Vente(models.Model):
         (3, "Annulée"),
     ]
 
-    types = [
-        (1, "Vente par barres"),
-        (2, "Vente globale"),
-    ]
-
-    fixing_bourse = models.FloatField()
-    discount = models.FloatField()
-    type = models.SmallIntegerField(choices=types, null=False)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -133,8 +125,15 @@ class Vente(models.Model):
 
 
 class VenteDetail(models.Model):
+
+    types = [
+        (1, "Vente par barres"),
+        (2, "Vente globale"),
+    ]
+
     vente = models.ForeignKey(Vente, on_delete=models.CASCADE)
     achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
     poids = models.FloatField()
     carrat = models.FloatField()
+    type = models.IntegerField(choices=types, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
