@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from operation_fournisseur.models import Fournisseur, Achat
+from operation_fournisseur.models import Fournisseur, Achat, AchatItems
 from utilisateurs.models import Utilisateur
 
 
@@ -132,8 +132,6 @@ class VenteDetail(models.Model):
     ]
 
     vente = models.ForeignKey(Vente, on_delete=models.CASCADE)
-    achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
-    poids = models.FloatField()
-    carrat = models.FloatField()
+    achat_item = models.ForeignKey(AchatItems, on_delete=models.CASCADE)
     type = models.IntegerField(choices=types, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
