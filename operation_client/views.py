@@ -51,3 +51,8 @@ class VenteDetailViewSet(viewsets.ModelViewSet):
     queryset = VenteDetail.objects.all()
     serializer_class = VenteDetailSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        # serializer.save(created_by=user)
+        serializer.save()

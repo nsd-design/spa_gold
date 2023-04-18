@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from operation_fournisseur.serializers import FournisseurSerializer
+from operation_fournisseur.serializers import FournisseurSerializer, AchatSerializer
 from utilisateurs.serializers import UtilisateurSerializer
 from .models import *
 
@@ -88,10 +88,12 @@ class VenteSerializer(serializers.ModelSerializer):
 
 
 class VenteDetailSerializer(serializers.ModelSerializer):
-    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
+    vente = serializers.PrimaryKeyRelatedField(queryset=Vente.objects.all())
+    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all())
 
     def to_representation(self, instance):
-        self.fields['client'] = ClientSerializer()
+        self.fields['vente'] = VenteSerializer()
+        self.fields['achat'] = AchatSerializer()
         return super(VenteDetailSerializer, self).to_representation(instance)
 
     class Meta:
