@@ -90,6 +90,7 @@ class OperationCompteFournis(models.Model):
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_fournis = models.ForeignKey(CompteFournisseur, on_delete=models.CASCADE)
     taux = models.FloatField(null=True)
+    montant = models.DecimalField(max_digits=20, decimal_places=2)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -130,7 +131,7 @@ class Attribution(models.Model):
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_attributions', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.arrivage} {self.nombre_barre}"
+        return f"{self.arrivage}"
 
 
 class Fixing(models.Model):
@@ -149,3 +150,13 @@ class Fixing(models.Model):
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_fixings', null=True, on_delete=models.CASCADE)
+
+
+class FactureFournisseur(models.Model):
+    fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE)
+    achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
+    poids_total = models.FloatField()
+    carrat_moyen = models.FloatField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_by_facture_fournisseur', null=True, blank=True, on_delete=models.CASCADE)
