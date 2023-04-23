@@ -13,6 +13,7 @@ router.register("operation_compte_fournisseur", OperationCompteFournisViewSet)
 router.register("arrivage", LotArrivageViewSet)
 router.register("attribution", AttributionViewSet)
 router.register("fixing", FixingViewSet)
+router.register("facture_fournisseur", FactureFournisseurViewSet)
 
 urlpatterns = [
     path("", include(router.urls))

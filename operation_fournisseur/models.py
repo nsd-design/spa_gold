@@ -42,7 +42,7 @@ class Achat(models.Model):
     created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.slug}, {self.fournisseur}"
+        return f"{self.fournisseur}"
 
 
 class AchatItems(models.Model):

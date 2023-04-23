@@ -5,8 +5,8 @@ from .models import *
 
 
 class ParticulierSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
-    updated_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
+    updated_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['created_by'] = UtilisateurSerializer()
@@ -19,8 +19,8 @@ class ParticulierSerializer(serializers.ModelSerializer):
 
 
 class CompteParticulierSerializer(serializers.ModelSerializer):
-    particulier = serializers.PrimaryKeyRelatedField(queryset=Particulier.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    particulier = serializers.PrimaryKeyRelatedField(queryset=Particulier.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['particulier'] = ParticulierSerializer()
@@ -33,8 +33,8 @@ class CompteParticulierSerializer(serializers.ModelSerializer):
 
 
 class OperationParticulierSerializer(serializers.ModelSerializer):
-    compte_particulier = serializers.PrimaryKeyRelatedField(queryset=CompteParticulier.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    compte_particulier = serializers.PrimaryKeyRelatedField(queryset=CompteParticulier.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['compte_particulier'] = CompteParticulierSerializer()

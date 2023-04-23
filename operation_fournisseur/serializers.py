@@ -5,7 +5,7 @@ from .models import *
 
 
 class FournisseurSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = Fournisseur
@@ -13,8 +13,8 @@ class FournisseurSerializer(serializers.ModelSerializer):
 
 
 class AchatSerializer(serializers.ModelSerializer):
-    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = Achat
@@ -27,7 +27,7 @@ class AchatSerializer(serializers.ModelSerializer):
     
 
 class AchatItemsSerializer(serializers.ModelSerializer):
-    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all())
+    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['achat'] = AchatSerializer()
@@ -39,8 +39,8 @@ class AchatItemsSerializer(serializers.ModelSerializer):
 
 
 class CompteFournisseurSerializer(serializers.ModelSerializer):
-    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = CompteFournisseur
@@ -53,8 +53,8 @@ class CompteFournisseurSerializer(serializers.ModelSerializer):
 
 
 class OperationCompteFournisSerializer(serializers.ModelSerializer):
-    compte_fournis = serializers.PrimaryKeyRelatedField(queryset=CompteFournisseur.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    compte_fournis = serializers.PrimaryKeyRelatedField(queryset=CompteFournisseur.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = OperationCompteFournis
@@ -67,7 +67,7 @@ class OperationCompteFournisSerializer(serializers.ModelSerializer):
 
 
 class LotArrivageSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['created_by'] = UtilisateurSerializer()
@@ -78,9 +78,9 @@ class LotArrivageSerializer(serializers.ModelSerializer):
 
 
 class AttributionSerializer(serializers.ModelSerializer):
-    arrivage = serializers.PrimaryKeyRelatedField(queryset=LotArrivage.objects.all())
-    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    arrivage = serializers.PrimaryKeyRelatedField(queryset=LotArrivage.objects.all(), required=False)
+    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = Attribution
@@ -94,8 +94,8 @@ class AttributionSerializer(serializers.ModelSerializer):
 
 
 class FixingSerializer(serializers.ModelSerializer):
-    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = Fixing
@@ -111,8 +111,8 @@ class FactureFournisseurSerializer(serializers.ModelSerializer):
         model = FactureFournisseur
         fields = '__all__'
 
-    fixing = serializers.PrimaryKeyRelatedField(queryset=Fixing.objects.all())
-    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all())
+    fixing = serializers.PrimaryKeyRelatedField(queryset=Fixing.objects.all(), required=False)
+    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all(), required=False)
     
     def to_representation(self, instance):
         self.fields['fixing'] = FixingSerializer()

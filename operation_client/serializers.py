@@ -6,7 +6,7 @@ from .models import *
 
 
 class ClientSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     class Meta:
         model = Client
@@ -18,8 +18,8 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class CompteClientSerializer(serializers.ModelSerializer):
-    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['client'] = ClientSerializer()
@@ -32,8 +32,8 @@ class CompteClientSerializer(serializers.ModelSerializer):
 
 
 class OperationCompteClientSerializer(serializers.ModelSerializer):
-    compte_client = serializers.PrimaryKeyRelatedField(queryset=CompteClient.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    compte_client = serializers.PrimaryKeyRelatedField(queryset=CompteClient.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['compte_client'] = CompteClientSerializer()
@@ -46,8 +46,8 @@ class OperationCompteClientSerializer(serializers.ModelSerializer):
 
 
 class FactureExpeditionSerializer(serializers.ModelSerializer):
-    fournisseur_exp = serializers.PrimaryKeyRelatedField(queryset=FactureExpedition.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    fournisseur_exp = serializers.PrimaryKeyRelatedField(queryset=FactureExpedition.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['fournisseur_exp'] = FournisseurSerializer()
@@ -60,8 +60,8 @@ class FactureExpeditionSerializer(serializers.ModelSerializer):
 
 
 class ExpeditionSerializer(serializers.ModelSerializer):
-    client_exp = serializers.PrimaryKeyRelatedField(queryset=Expedition.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    client_exp = serializers.PrimaryKeyRelatedField(queryset=Expedition.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['client_exp'] = ExpeditionSerializer()
@@ -74,8 +74,8 @@ class ExpeditionSerializer(serializers.ModelSerializer):
 
 
 class VenteSerializer(serializers.ModelSerializer):
-    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
-    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all(), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['client'] = ClientSerializer()
@@ -88,8 +88,8 @@ class VenteSerializer(serializers.ModelSerializer):
 
 
 class VenteDetailSerializer(serializers.ModelSerializer):
-    vente = serializers.PrimaryKeyRelatedField(queryset=Vente.objects.all())
-    achat_item = serializers.PrimaryKeyRelatedField(queryset=AchatItems.objects.all())
+    vente = serializers.PrimaryKeyRelatedField(queryset=Vente.objects.all(), required=False)
+    achat_item = serializers.PrimaryKeyRelatedField(queryset=AchatItems.objects.all(), required=False)
 
     def to_representation(self, instance):
         self.fields['vente'] = VenteSerializer()
