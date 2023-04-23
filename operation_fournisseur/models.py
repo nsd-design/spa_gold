@@ -152,6 +152,13 @@ class Fixing(models.Model):
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_fixings', null=True, on_delete=models.CASCADE)
 
 
+class FixingDetail(models.Model):
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
+    achat_items = models.ForeignKey(AchatItems, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
+
+
 class FactureFournisseur(models.Model):
     fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE)
     achat = models.ForeignKey(Achat, on_delete=models.CASCADE)

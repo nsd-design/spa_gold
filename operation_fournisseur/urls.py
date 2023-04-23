@@ -14,6 +14,7 @@ router.register("arrivage", LotArrivageViewSet)
 router.register("attribution", AttributionViewSet)
 router.register("fixing", FixingViewSet)
 router.register("facture_fournisseur", FactureFournisseurViewSet)
+router.register("fixing_detail", FixingDetailViewSet)
 
 urlpatterns = [
     path("", include(router.urls))

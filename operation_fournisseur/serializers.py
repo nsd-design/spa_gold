@@ -105,6 +105,20 @@ class FixingSerializer(serializers.ModelSerializer):
         self.fields['fournisseur'] = FournisseurSerializer()
         return super(FixingSerializer, self).to_representation(instance)
 
+
+class FixingDetailSerializer(serializers.ModelSerializer):
+    achat_items = serializers.PrimaryKeyRelatedField(queryset=AchatItems.objects.all())
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all())
+    
+    def to_representation(self, instance):
+        self.fields['achat_items'] = AchatItemsSerializer()
+        self.fields['created_by'] = UtilisateurSerializer()
+        return super(FixingDetailSerializer, self).to_representation(instance)
+
+    class Meta:
+        model = FixingDetail
+        fields = '__all__'
+        
     
 class FactureFournisseurSerializer(serializers.ModelSerializer):
     class Meta:

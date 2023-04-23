@@ -171,6 +171,12 @@ class FixingViewSet(viewsets.ModelViewSet):
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
 
+class FixingDetailViewSet(viewsets.ModelViewSet):
+    queryset = FixingDetail.objects.all()
+    serializer_class = FixingDetailSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
+
 class FactureFournisseurViewSet(viewsets.ModelViewSet):
     queryset = FactureFournisseur.objects.all()
     serializer_class = FactureFournisseurSerializer
