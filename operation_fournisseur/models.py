@@ -141,11 +141,18 @@ class Fixing(models.Model):
         (3, "Annulé"),
     ]
 
+    type_fixing = [
+        (1, "Par barre"),
+        (2, "Global")
+    ]
+
     poids_fixe = models.FloatField()
     status = models.IntegerField(choices=status_values, default=1, null=False)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     fixing_bourse = models.FloatField()
     carrat_moyen = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    discompte = models.DecimalField(max_digits=2, decimal_places=1)
+    type = models.IntegerField(choices=type_fixing)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
