@@ -145,6 +145,7 @@ class Fixing(models.Model):
     status = models.IntegerField(choices=status_values, default=1, null=False)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     fixing_bourse = models.FloatField()
+    carrat_moyen = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
