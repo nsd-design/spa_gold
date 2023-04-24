@@ -91,6 +91,7 @@ class OperationCompteFournis(models.Model):
     compte_fournis = models.ForeignKey(CompteFournisseur, on_delete=models.CASCADE)
     taux = models.FloatField(null=True)
     montant = models.DecimalField(max_digits=20, decimal_places=2)
+    solde_anterieur = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
