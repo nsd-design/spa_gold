@@ -133,4 +133,16 @@ class FactureFournisseurSerializer(serializers.ModelSerializer):
         self.fields['achat'] = AchatSerializer()
         
         return super(FactureFournisseurSerializer, self).to_representation(instance)
+
+
+class CaisseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Caisse
+        fields = '__all__'
+
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
+    
+    def to_representation(self, instance):
+        self.fields['created_by'] = UtilisateurSerializer()
+        return super(CaisseSerializer, self).to_representation(instance)
     

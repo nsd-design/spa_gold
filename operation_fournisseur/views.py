@@ -181,3 +181,14 @@ class FactureFournisseurViewSet(viewsets.ModelViewSet):
     queryset = FactureFournisseur.objects.all()
     serializer_class = FactureFournisseurSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
+
+class CaisseViewSet(viewsets.ModelViewSet):
+    queryset = Caisse.objects.all()
+    serializer_class = CaisseSerializer
+    allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        # serializer.save(created_by=user)
+        serializer.save()

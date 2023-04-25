@@ -177,3 +177,24 @@ class FactureFournisseur(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_by_facture_fournisseur', null=True, blank=True, on_delete=models.CASCADE)
+
+
+class Caisse(models.Model):
+    type_operation = [
+        (1, "Entrée"),
+        (2, "Sortie"),
+    ]
+
+    devises = [
+        (1, "GNF"),
+        (2, "USD"),
+    ]
+
+    operation = models.IntegerField(choices=type_operation)
+    montant = models.DecimalField(max_digits=20, decimal_places=2)
+    devise = models.IntegerField(choices=devises)
+    motif = models.CharField(max_length=255)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(Utilisateur, related_name='created_by_caisse', null=True, blank=True,
+                                   on_delete=models.CASCADE)
