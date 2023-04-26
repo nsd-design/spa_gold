@@ -136,25 +136,11 @@ class Attribution(models.Model):
 
 
 class Fixing(models.Model):
-    status_values = [
-        (1, "En cours"),
-        (2, "Validé"),
-        (3, "Annulé"),
-    ]
-
-    type_fixing = [
-        (1, "Par barre"),
-        (2, "Global")
-    ]
 
     poids_fixe = models.FloatField()
-    status = models.IntegerField(choices=status_values, default=1, null=False)
-    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     fixing_bourse = models.FloatField()
-    carrat_moyen = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     discompte = models.DecimalField(max_digits=2, decimal_places=1)
-    type = models.IntegerField(choices=type_fixing)
-    achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
@@ -163,8 +149,15 @@ class Fixing(models.Model):
 
 
 class FixingDetail(models.Model):
-    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
+    types_envoie = [
+        (1, "Par barre"),
+        (2, "Global")
+    ]
+    achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
     achat_items = models.ForeignKey(AchatItems, on_delete=models.CASCADE)
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
+    fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE)
+    type_envoie = models.IntegerField(choices=types_envoie)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
 
