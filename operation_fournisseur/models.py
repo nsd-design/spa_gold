@@ -153,10 +153,10 @@ class FixingDetail(models.Model):
         (1, "Par barre"),
         (2, "Global")
     ]
-    achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
-    achat_items = models.ForeignKey(AchatItems, on_delete=models.CASCADE)
-    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
-    fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE)
+    achat = models.ForeignKey(Achat, on_delete=models.CASCADE, null=True, blank=True)
+    achat_items = models.ForeignKey(AchatItems, on_delete=models.CASCADE, null=True, blank=True)
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, null=True, blank=True)
+    fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE, null=True, blank=True)
     type_envoie = models.IntegerField(choices=types_envoie)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
