@@ -137,10 +137,17 @@ class Attribution(models.Model):
 
 class Fixing(models.Model):
 
+    status_fixing = [
+        (1, "En attente"),
+        (2, "Validé"),
+        (3, "Annulé"),
+    ]
+
     poids_fixe = models.FloatField()
     fixing_bourse = models.FloatField()
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     discompte = models.DecimalField(max_digits=2, decimal_places=1)
+    status = models.IntegerField(choices=status_fixing, default=1)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
@@ -158,6 +165,7 @@ class FixingDetail(models.Model):
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, null=True, blank=True)
     fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE, null=True, blank=True)
     type_envoie = models.IntegerField(choices=types_envoie)
+    poids_select = models.DecimalField(max_digits=18, decimal_places=2, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
 
