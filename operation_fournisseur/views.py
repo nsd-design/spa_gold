@@ -124,9 +124,9 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = AchatItems.objects.all()
 
-        slug = self.request.query_params.get('slug')
-        if slug:
-            queryset = queryset.filter(slug=slug)
+        id_achat = self.request.query_params.get('id_achat')
+        if id_achat:
+            queryset = queryset.filter(achat=id_achat)
             return queryset
 
         return queryset
