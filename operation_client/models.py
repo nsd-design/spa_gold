@@ -135,4 +135,5 @@ class VenteDetail(models.Model):
     vente = models.ForeignKey(Vente, on_delete=models.CASCADE)
     achat_item = models.ForeignKey(AchatItems, on_delete=models.CASCADE)
     type = models.IntegerField(choices=types, null=False)
+    achat = models.ForeignKey(Achat, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

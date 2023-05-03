@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -101,10 +101,14 @@ class AchatViewSet(viewsets.ModelViewSet):
         date_time = timezone.now()
         req = self.request.query_params
         req_data = self.request.data
-        print("Req =", req)
-        print("Req data =", req_data)
         # serializer.save(updated_by=self.request.user, updated_at=date_time)
         serializer.save(updated_at=date_time)
+
+
+def updateAchaItems(request):
+    if request.method == 'POST':
+        print(request)
+    return JsonResponse({'message': 'repons update achat item'})
 
 
 class AchatItemsVieSet(viewsets.ModelViewSet):
@@ -116,20 +120,34 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         print("user =", user)
-        achat = self.request.data['achat']
-        print("Achat in achat items =", achat)
+
         # serializer.save(achat=achat)
-        serializer.save()
+        # serializer.save()
 
     def get_queryset(self):
         queryset = AchatItems.objects.all()
 
         id_achat = self.request.query_params.get('id_achat')
+
+        id_items = self.request.data
+        # print("Data de id_items :", id_items)
+
         if id_achat:
             queryset = queryset.filter(achat=id_achat)
             return queryset
 
         return queryset
+
+    # def perform_update(self, serializer):
+    #
+    #     datas = self.request.data
+    #     print(datas)
+
+    def partial_update(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        ids = request.data.get('id')
+        objects = self.get
+        return "OK"
 
 
 class CompteFournisseurViewSet(viewsets.ModelViewSet):

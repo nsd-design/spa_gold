@@ -18,5 +18,6 @@ router.register("fixing_detail", FixingDetailViewSet)
 router.register("caisse", CaisseViewSet)
 
 urlpatterns = [
-    path("", include(router.urls))
+    path("", include(router.urls)),
+    path('update_achat_item/', view=updateAchaItems, name="update_achat_item")
 ]
