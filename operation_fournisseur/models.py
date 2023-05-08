@@ -42,7 +42,7 @@ class Achat(models.Model):
     created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.fournisseur}"
+        return f"{self.fournisseur} {self.id}"
 
 
 class AchatItems(models.Model):
@@ -50,6 +50,10 @@ class AchatItems(models.Model):
     carrat_achat = models.FloatField()
     manquant = models.FloatField(null=True)
     achat = models.ForeignKey(Achat, related_name="achat_achat_items", null=True, blank=True, on_delete=models.CASCADE)
+    item_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"id = {self.id}, poids = {self.poids_achat}, carrat = {self.carrat_achat}, achat = {self.achat}"
 
 
 class CompteFournisseur(models.Model):

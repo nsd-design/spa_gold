@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from django.http import JsonResponse
 from django.utils import timezone
@@ -73,10 +74,14 @@ class AchatViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Achat.objects.all()
 
+        # Recuperer les achats par Slug
         slug = self.request.query_params.get('slug')
         if slug:
             queryset = queryset.filter(slug=slug)
             return queryset
+
+        """ Recuperer les achats d'apres une periode
+            definie a travers start_date et end_date """
 
         start_date = self.request.query_params.get('startDate')
         end_date = self.request.query_params.get('endDate')
@@ -105,12 +110,6 @@ class AchatViewSet(viewsets.ModelViewSet):
         serializer.save(updated_at=date_time)
 
 
-def updateAchaItems(request):
-    if request.method == 'POST':
-        print(request)
-    return JsonResponse({'message': 'repons update achat item'})
-
-
 class AchatItemsVieSet(viewsets.ModelViewSet):
     queryset = AchatItems.objects.all()
     serializer_class = AchatItemsSerializer
@@ -122,21 +121,40 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
         print("user =", user)
 
         # serializer.save(achat=achat)
-        # serializer.save()
+        serializer.save()
 
     def get_queryset(self):
         queryset = AchatItems.objects.all()
 
-        id_achat = self.request.query_params.get('id_achat')
+        # id_achat = self.request.query_params.get('id_achat')
 
-        id_items = self.request.data
-        # print("Data de id_items :", id_items)
+        id_fournisseur = self.request.query_params.get('id_fournisseur')
 
-        if id_achat:
-            queryset = queryset.filter(achat=id_achat)
-            return queryset
+        id_achat = 0
 
-        return queryset
+        if id_fournisseur:
+            try:
+                print("Id fournisseur", id_fournisseur)
+                achat_encours = Achat.objects.filter(fournisseur=id_fournisseur, status=1)
+                print("Id achat en cours", achat_encours)
+                id_achat = achat_encours[0].id
+            except IndexError:
+                msg = {"message": "Fournisseur introuvable"}
+                return None
+
+            try:
+
+                achat_items = AchatItems.objects.filter(achat=id_achat, item_used=False)
+                print("try achat items", achat_items)
+                return achat_items
+            except IndexError:
+                print("Aucun item pour cet achat")
+                msg = {"message": "Aucun item pour cet achat"}
+                return None
+
+            return achat_items
+
+        return queryset.filter(item_used=False)
 
     # def perform_update(self, serializer):
     #
