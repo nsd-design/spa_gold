@@ -162,16 +162,20 @@ class Fixing(models.Model):
 class FixingDetail(models.Model):
     types_envoie = [
         (1, "Par barre"),
-        (2, "Global")
+        (2, "Global"),
+        (3, "Par Poids"),
     ]
     achat = models.ForeignKey(Achat, on_delete=models.CASCADE, null=True, blank=True)
-    achat_items = models.ForeignKey(AchatItems, on_delete=models.CASCADE, null=True, blank=True)
+    achat_items = models.BigIntegerField(null=True, blank=True, unique=True)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, null=True, blank=True)
     fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE, null=True, blank=True)
     type_envoie = models.IntegerField(choices=types_envoie)
     poids_select = models.DecimalField(max_digits=18, decimal_places=2, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Achat: {self.achat}, Poids: {self.poids_select}"
 
 
 class FactureFournisseur(models.Model):

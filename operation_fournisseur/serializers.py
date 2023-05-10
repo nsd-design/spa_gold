@@ -108,13 +108,15 @@ class FixingSerializer(serializers.ModelSerializer):
 
 class FixingDetailSerializer(serializers.ModelSerializer):
     fournisseur = serializers.PrimaryKeyRelatedField(queryset=Fournisseur.objects.all(), required=False)
-    achat_items = serializers.PrimaryKeyRelatedField(queryset=AchatItems.objects.all(), required=False)
+    # achat_items = serializers.PrimaryKeyRelatedField(queryset=AchatItems.objects.all(), required=False)
     created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
-    
+    achat = serializers.PrimaryKeyRelatedField(queryset=Achat.objects.all(), required=False)
+
     def to_representation(self, instance):
-        self.fields['achat_items'] = AchatItemsSerializer()
+        # self.fields['achat_items'] = AchatItemsSerializer()
         self.fields['created_by'] = UtilisateurSerializer()
         self.fields['fournisseur'] = FournisseurSerializer()
+        self.fields['achat'] = AchatSerializer()
         return super(FixingDetailSerializer, self).to_representation(instance)
 
     class Meta:
