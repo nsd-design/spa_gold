@@ -32,11 +32,12 @@ class Achat(models.Model):
     status_values = [
         (1, "En cours"),
         (2, "Validé"),
+        (3, "Cloturé"),
     ]
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     slug = models.UUIDField(max_length=255, default=uuid.uuid4, editable=False, unique=True)
-    poids_total = models.FloatField(null=True, blank=True)
-    carrat_moyen = models.FloatField(null=True, blank=True)
+    poids_total = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    carrat_moyen = models.FloatField(null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_achats', null=True, on_delete=models.CASCADE)
@@ -46,9 +47,9 @@ class Achat(models.Model):
 
 
 class AchatItems(models.Model):
-    poids_achat = models.FloatField()
-    carrat_achat = models.FloatField()
-    manquant = models.FloatField(null=True)
+    poids_achat = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    carrat_achat = models.DecimalField(max_digits=6, decimal_places=2)
+    manquant = models.DecimalField(max_digits=6, decimal_places=2, null=True)
     achat = models.ForeignKey(Achat, related_name="achat_achat_items", null=True, blank=True, on_delete=models.CASCADE)
     item_used = models.BooleanField(default=False)
 
@@ -93,7 +94,7 @@ class OperationCompteFournis(models.Model):
     ]
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_fournis = models.ForeignKey(CompteFournisseur, on_delete=models.CASCADE)
-    taux = models.FloatField(null=True)
+    taux = models.DecimalField(max_digits=6, decimal_places=2, null=True)
     montant = models.DecimalField(max_digits=20, decimal_places=2)
     solde_anterieur = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     motif = models.CharField(max_length=250, null=True)
@@ -147,16 +148,19 @@ class Fixing(models.Model):
         (3, "Annulé"),
     ]
 
-    poids_fixe = models.FloatField()
-    fixing_bourse = models.FloatField()
+    poids_fixe = models.DecimalField(max_digits=20, decimal_places=2)
+    fixing_bourse = models.DecimalField(max_digits=20, decimal_places=2)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
-    discompte = models.DecimalField(max_digits=2, decimal_places=1)
+    discompte = models.DecimalField(max_digits=6, decimal_places=1)
     status = models.IntegerField(choices=status_fixing, default=1)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixings', null=True, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_fixings', null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Poids fixe: {self.poids_fixe}, Fournisseur: {self.fournisseur}"
 
 
 class FixingDetail(models.Model):
@@ -181,8 +185,8 @@ class FixingDetail(models.Model):
 class FactureFournisseur(models.Model):
     fixing = models.ForeignKey(Fixing, on_delete=models.CASCADE)
     achat = models.ForeignKey(Achat, on_delete=models.CASCADE)
-    poids_total = models.FloatField()
-    carrat_moyen = models.FloatField()
+    poids_total = models.DecimalField(max_digits=20, decimal_places=2)
+    carrat_moyen = models.DecimalField(max_digits=6, decimal_places=2)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_by_facture_fournisseur', null=True, blank=True, on_delete=models.CASCADE)
@@ -207,6 +211,7 @@ class Caisse(models.Model):
     motif = models.CharField(max_length=255)
     fournisseur = models.ForeignKey(Fournisseur, null=True, on_delete=models.CASCADE)
     montant_anterieur = models.DecimalField(max_digits=20, decimal_places=2)
+    representant = models.CharField(max_length=200, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_by_caisse', null=True, blank=True,

@@ -66,7 +66,7 @@ class OperationCompteClient(models.Model):
     ]
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_client = models.ForeignKey(CompteClient, on_delete=models.CASCADE)
-    taux = models.FloatField(null=True)
+    taux = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     montant = models.DecimalField(max_digits=20, decimal_places=2)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
@@ -85,9 +85,9 @@ class FactureExpedition(models.Model):
         (2, "Validée"),
     ]
     fournisseur_exp = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
-    poids_exp = models.FloatField(null=False)
+    poids_exp = models.DecimalField(max_digits=20, decimal_places=2)
     slug = models.CharField(max_length=12, null=False)
-    carrat_moyen = models.FloatField()
+    carrat_moyen = models.DecimalField(max_digits=6, decimal_places=2)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_factures_expeditions', null=True, on_delete=models.CASCADE)

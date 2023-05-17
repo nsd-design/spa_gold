@@ -56,7 +56,7 @@ class OperationParticulier(models.Model):
     ]
     type_operation = models.IntegerField(choices=types_operation, null=False)
     compte_particulier = models.ForeignKey(CompteParticulier, on_delete=models.CASCADE)
-    taux = models.FloatField(null=True)
+    taux = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     motif = models.CharField(max_length=250, null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
     created_at = models.DateTimeField(auto_now_add=True)

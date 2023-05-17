@@ -1,8 +1,10 @@
+import decimal
 import json
 from datetime import datetime
 
 from django.db.models import Sum
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -18,14 +20,34 @@ class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all()
     serializer_class = FournisseurSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
     # authentication_classes = [TokenAuthentication]
+
+    @action(detail=True, methods=['POST'])
+    def add_fournisseur(self, request, pk=None, *args, **kwargs):
+        serializer = FournisseurSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            for item_data in serializer.validated_data:
+                FixingDetail.objects.create(
+                    nom=item_data['nom'], prenom=item_data['prenom'], pays=item_data['pays'],
+                    ville=item_data['ville'], adresse=item_data['adresse'], telephone=item_data['telephone'],
+                    email=item_data['email'], created_by=request.user
+                )
+
+            response = {
+                "message": "Fournisseur créé avec succès",
+                "instance": serializer.data
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, serializer):
         """Create new Fournisseur"""
         user = self.request.user
         print("User est :", user)
-        # serializer.save(created_by=user)
-        serializer.save()
+        serializer.save(created_by=user)
+        # serializer.save()
 
     # @action(detail=True, methods=['PUT'])
     # def update(self, request, *args, **kwargs):
@@ -41,26 +63,28 @@ class FournisseurViewSet(viewsets.ModelViewSet):
         # serializer.save(updated_by=user, updated_at=date_time)
         serializer.save(updated_at=date_time)
 
-
     @action(detail=True, methods=['POST'])
-    def create_f(self, request, pk=None):
-        if 'telephone' in request.data:
-            fournisseur = Fournisseur.objects.get(id=pk)
-            user = Utilisateur.objects.get(id=1)
-            print("User", user.username)
-            print("Fournisseur ", fournisseur.nom, " ", fournisseur.prenom)
+    def create_fournisseur(self, request, pk=None):
+        print(request.data)
 
-            response = {"message": "Succès"}
-            return Response(response, status=status.HTTP_200_OK)
-        else:
-            response = {"message": "Numero de telephone manquant"}
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        # if 'telephone' in request.data:
+        #     fournisseur = Fournisseur.objects.get(id=pk)
+        #     user = Utilisateur.objects.get(id=1)
+        #     print("User", user.username)
+        #     print("Fournisseur ", fournisseur.nom, " ", fournisseur.prenom)
+        #
+        #     response = {"message": "Succès"}
+        #     return Response(response, status=status.HTTP_200_OK)
+        # else:
+        #     response = {"message": "Numero de telephone manquant"}
+        #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AchatViewSet(viewsets.ModelViewSet):
     queryset = Achat.objects.all()
     serializer_class = AchatSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
     # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
@@ -69,61 +93,47 @@ class AchatViewSet(viewsets.ModelViewSet):
         # serializer.save(created_by=user)
         serializer.save()
 
-    # def get(self):
-    #     achat_by_user = Achat.objects.filter(created_by=self.request.user).order_by("-created_at").first()
-    #     return achat_by_user
-
     def get_queryset(self):
         queryset = Achat.objects.all()
 
         id_fournisseur = self.request.query_params.get("id_fournisseur")
         if id_fournisseur is not None:
-            try:
-                achats_du_fournisseur = queryset.filter(fournisseur=id_fournisseur)
-                achats_pas_dans_fixing_detail = []
-                # print("Id fournisseur =", id_fournisseur)
+            achats_by_fournisseur = queryset.filter(fournisseur=id_fournisseur, status=2)
+            return achats_by_fournisseur
 
-                poids_total_achat_sup = True
-                for achat in achats_du_fournisseur:
-                    # Recuperer les Achat ne trouvant pas dans fixing detail
-                    # if not FixingDetail.objects.filter(achat=achat, type_envoie=2).exists():
-                        # achats_pas_dans_fixing_detail.append(achat)
-                        # print("Achat pas dans fixing detail", achats_pas_dans_fixing_detail)
-                        # print("Achat a chercher dans Fixing detail =", achat)
-
-                    if FixingDetail.objects.filter(achat=achat, type_envoie=3).exists():
-                        print("Achat trouvé dans Fixing detail =", achat)
-                        print("Poids total Achat trouvé dans Fixing detail =", achat.poids_total)
-                        achats_dans_fixing_detail = FixingDetail.objects.filter(achat=achat, type_envoie=3)
-                        somme_poids_achat = achats_dans_fixing_detail.aggregate(somme_poids=Sum('poids_select'))
-                        print("Achat :", achats_dans_fixing_detail, "Somme poids =", somme_poids_achat)
-                        if somme_poids_achat['somme_poids'] is not None:
-                            if achat.poids_total > somme_poids_achat['somme_poids']:
-                                print("Somme Poids dans comparaison =", somme_poids_achat['somme_poids'])
-                                print("Poids total Achat dans comparaison =", achat.poids_total)
-                                achats_pas_dans_fixing_detail.append(achat)
-
-                    elif not FixingDetail.objects.filter(achat=achat, type_envoie=2).exists():
-                        achats_pas_dans_fixing_detail.append(achat)
-
-                # print("Achats pas dans fixing details", achats_pas_dans_fixing_detail)
-
-                # achats_dans_fixing_detail = FixingDetail.objects.filter(achat=achat, type_envoie=3)
-                # somme_poids_achat = achats_dans_fixing_detail.aggregate(somme_poids=Sum('poids_select'))
-                # print("Somme Poids achat =", somme_poids_achat)
-                # for achat_dans_fixing_detail in achats_dans_fixing_detail:
-                #     print("Poids de l'achat dans fixing detail =", achat_dans_fixing_detail.poids_select)
-                # if somme_poids_achat['somme_poids'] is not None:
-                #     if somme_poids_achat['somme_poids'] < achat.poids_total:
-                #         achats_pas_dans_fixing_detail.append(achat)
-
-                    # if FixingDetail.objects.filter(achat=achat, type_envoie=3).exists():
-                    #     print("Poids de l'achat =", achat.poids_select)
-                print("Achats pas dans fixing details", achats_pas_dans_fixing_detail)
-                return achats_pas_dans_fixing_detail
-
-            except IndexError:
-                return None
+            # try:
+            #     achats_du_fournisseur = queryset.filter(fournisseur=id_fournisseur)
+            #     achats_pas_dans_fixing_detail = []
+            #     # print("Id fournisseur =", id_fournisseur)
+            #
+            #     poids_total_achat_sup = True
+            #     for achat in achats_du_fournisseur:
+            #         # Recuperer les Achat ne trouvant pas dans fixing detail
+            #         # if not FixingDetail.objects.filter(achat=achat, type_envoie=2).exists():
+            #             # achats_pas_dans_fixing_detail.append(achat)
+            #             # print("Achat pas dans fixing detail", achats_pas_dans_fixing_detail)
+            #             # print("Achat a chercher dans Fixing detail =", achat)
+            #
+            #         if FixingDetail.objects.filter(achat=achat, type_envoie=3).exists():
+            #             print("Achat trouvé dans Fixing detail =", achat)
+            #             print("Poids total Achat trouvé dans Fixing detail =", achat.poids_total)
+            #             achats_dans_fixing_detail = FixingDetail.objects.filter(achat=achat, type_envoie=3)
+            #             somme_poids_achat = achats_dans_fixing_detail.aggregate(somme_poids=Sum('poids_select'))
+            #             print("Achat :", achats_dans_fixing_detail, "Somme poids =", somme_poids_achat)
+            #             if somme_poids_achat['somme_poids'] is not None:
+            #                 if achat.poids_total > somme_poids_achat['somme_poids']:
+            #                     print("Somme Poids dans comparaison =", somme_poids_achat['somme_poids'])
+            #                     print("Poids total Achat dans comparaison =", achat.poids_total)
+            #                     achats_pas_dans_fixing_detail.append(achat)
+            #
+            #         elif not FixingDetail.objects.filter(achat=achat, type_envoie=2).exists():
+            #             achats_pas_dans_fixing_detail.append(achat)
+            #
+            #     print("Achats pas dans fixing details", achats_pas_dans_fixing_detail)
+            #     return achats_pas_dans_fixing_detail
+            #
+            # except IndexError:
+            #     return None
 
         # Recuperer les achats par Slug
         slug = self.request.query_params.get('slug')
@@ -131,7 +141,7 @@ class AchatViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(slug=slug)
             return queryset
 
-        """ Recuperer les achats d'apres une periode
+        """ Recuperer les achats d'après une periode
             definie a travers start_date et end_date """
 
         start_date = self.request.query_params.get('startDate')
@@ -145,7 +155,8 @@ class AchatViewSet(viewsets.ModelViewSet):
                 if not end_date == 'undefined' and not end_date == '':
                     # Converting end date
                     date_fin = datetime.fromtimestamp(float(end_date) / 1000).astimezone()
-                    qs = queryset.filter(created_at__gte=date_debut_to_local_date, created_at__lt=date_fin).select_related('fournisseur')
+                    qs = queryset.filter(created_at__gte=date_debut_to_local_date,
+                                         created_at__lt=date_fin).select_related('fournisseur')
                     # print("Resultat QS", qs)
                     return qs
                 elif date_debut_to_local_date:
@@ -165,6 +176,7 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
     queryset = AchatItems.objects.all()
     serializer_class = AchatItemsSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
+
     # authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
@@ -281,21 +293,231 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
     serializer_class = FixingDetailSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
+    def perform_update(self, serializer):
+        datas = self.request.data
+        print(datas)
+        date_time = timezone.now()
+        # serializer.save(updated_by=self.request.user, updated_at=date_time)
+        serializer.save(updated_at=date_time)
+
+    @action(detail=True, methods=['POST'])
+    def create_fixing_detail(self, request, pk=None, *args, **kwargs):
+        serializer = FixingDetailSerializer(data=request.data, many=True)
+
+        if serializer.is_valid():
+            print("Id achat", serializer.data[0]['achat']['id'])
+            id_achat = int(serializer.data[0]['achat']['id'])
+            achat_cloture = False
+            for fixing_detail in serializer.validated_data:
+                FixingDetail.objects.create(
+                    achat=fixing_detail['achat'], achat_items=fixing_detail['achat_items'],
+                    fournisseur=fixing_detail['fournisseur'], fixing=fixing_detail['fixing'],
+                    type_envoie=fixing_detail['type_envoie'],
+                    created_by=fixing_detail['created_by']
+                )
+
+            # Recuperer l'id des AchatItems pour calculer leur POIDS => 'poids_achat'
+            id_achat_items = FixingDetail.objects.filter(achat=id_achat).values('achat_items').exclude(achat_items=None)
+            print("tab id achat items", id_achat_items)
+            achat_items = AchatItems.objects.filter(id__in=id_achat_items)
+            somme_poid_achat_items = achat_items.aggregate(somme=Sum('poids_achat'))['somme']
+            print("Somme poids achata items", somme_poid_achat_items)
+
+            if somme_poid_achat_items is not None:
+                # Si le poids des achats items est egal au poids total de l'achat
+                # On cloture l'achat
+                achat = Achat.objects.get(id=id_achat)
+                if decimal.Decimal(somme_poid_achat_items) == decimal.Decimal(achat.poids_total):
+                    achat.status = 3
+                    date_time = timezone.now()
+                    achat.updated_by = request.user
+                    achat.updated_at = date_time
+                    achat.save()
+                    achat_cloture = True
+            response = {
+                "somme_poids_achat_items": somme_poid_achat_items,
+                "poids_total_achat": achat.poids_total,
+                "achat_cloture": achat_cloture,
+                "data": serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_create(self, serializer):
+        serializer.save()
+        type_envoie = serializer.data['type_envoie']
+        poids_total_achat = decimal.Decimal(serializer.data['achat']['poids_total'])
+        print(poids_total_achat)
+
+        if type_envoie == 3:
+            # Poids
+            fixing_details = FixingDetail.objects.filter(type_envoie=3, achat=serializer.data['achat']['id'])
+            sum_poids_fixing = fixing_details.aggregate(somme_poids_select=Sum('poids_select'))['somme_poids_select']
+            print("Somme poids achat", sum_poids_fixing)
+            if poids_total_achat == sum_poids_fixing:
+                try:
+                    achat = Achat.objects.get(pk=serializer.data['achat']['id'])
+                    print(achat)
+                    achat.status = 3
+                    date_time = timezone.now()
+                    achat.updated_at = date_time
+                    achat.updated_by = self.request.user
+                    achat.save()
+                except IndexError:
+                    response = {"message": "Achat introuvable"}
+                    return Response(response)
+
+        # if type_envoie == 1:
+        #     # Par barre
+        #     fixing_detail_items = FixingDetail.objects.filter(achat=serializer.data['achat']['id'])
+        #     # fixing_detail_items.values('achat_items')
+        #     sum_poids_fixind_detail = 0
+        #     for item in fixing_detail_items:
+        #         poids = AchatItems.objects.get(pk=item.achat_items).poids_achat
+        #         sum_poids_fixind_detail += poids
+        #     if decimal.Decimal(sum_poids_fixind_detail) == decimal.Decimal(poids_total_achat):
+        #         try:
+        #             achat = Achat.objects.get(pk=serializer.data['achat']['id'])
+        #             achat.status = 3
+        #             achat.save()
+        #         except IndexError:
+        #             response = {"message": "Achat introuvable"}
+        #             return Response(response)
+        #     else:
+        #         print("not equal to poids_ttal")
+        # elif type_envoie == 2:
+        #     # Envoie Global
+        #     try:
+        #         achat = Achat.objects.get(pk=serializer.data['achat']['id'])
+        #         achat.status = 3
+        #         achat.save()
+        #     except IndexError:
+        #         response = {"message": "Achat introuvable"}
+        #         return Response(response)
+        # elif type_envoie == 3:
+        #     # Poids
+        #     fixing_details = FixingDetail.objects.filter(type_envoie=3, achat=serializer.data['achat']['id'])
+        #     sum_poids_fixing = fixing_details.aggregate(somme_poids_select=Sum('poids_select'))['somme_poids_select']
+        #     print("poids total", sum_poids_fixing)
+        #     if poids_total_achat == sum_poids_fixing:
+        #         try:
+        #             achat = Achat.objects.get(pk=serializer.data['achat']['id'])
+        #             print(achat)
+        #             achat.status = 3
+        #             achat.save()
+        #         except IndexError:
+        #             response = {"message": "Achat introuvable"}
+        #             return Response(response)
+
+    @action(detail=True, methods=['GET'])
+    def get_fixing_by_id(self, request, pk=None):
+        # Le parametre pk contient la valeur transmise par url
+        # ici il correspond a l'id du Fixing envoyé dans la requete
+
+        if pk is not None:
+            print("Id Fixing =", pk)
+            # Recuperer le Fixing dont l'id a été reçu dans la requete
+            errors = {}
+            somme_poids_achat_items = 0.0
+            # try:
+            fixing = get_object_or_404(Fixing, pk=pk)
+            # fixing = Fixing.objects.get(pk=pk)
+            poids_fixe_dans_fixing = fixing.poids_fixe
+            print("Poids fixe dans Fixing =", poids_fixe_dans_fixing)
+
+            somme_poids_items = 0.00  # Recupere le poids de l'achat envoyé par items
+            somme_poids_selected = 0.00  # Recupere le poids de l'achat envoyé par poids
+            poids_total_achats = 0.00  # Recupere le poids de l'achat envoyé globalement
+            # try:
+            fixings_detail = FixingDetail.objects.filter(fixing=pk)
+            # Faire la Somme des poids des achat envoyé par Poids
+            somme_poids_select = fixings_detail.aggregate(somme_poids_select=Sum('poids_select'))['somme_poids_select']
+            if somme_poids_select is not None:
+                somme_poids_selected = somme_poids_select
+            # except IndexError:
+            #     errors["fixing_par_poids"] = "Pas de fixing par poids"
+            #     response = {"fixing_detail": "Ce Fixing ne contient aucun Achat"}
+            #     return Response(response)
+            # try:
+            # Recuperer le poids de l'Achat envoyé Globalement
+            """" 
+            Pour cela on recupere d'abord l'id de l'Achat dont
+            La valeur de l'achat item correspondant est Null et la valeur du poids_select aussi est Null
+            """
+            if fixings_detail.values('achat_id').filter(achat_items=None, poids_select=None).exists():
+                # Poids Total de l'achat depuis le model Achat
+                id_achat = fixings_detail.values('achat_id').filter(achat_items=None, poids_select=None)
+                if id_achat is not None:
+                    achat_poids_total = id_achat.values('achat_id__poids_total')
+                    poids_total_achat = achat_poids_total[0]['achat_id__poids_total']
+                    if poids_total_achat is not None:
+                        poids_total_achats = poids_total_achat
+                        print("Poids Total de l'Achat envoyé par global", poids_total_achat)
+            # except IndexError:
+            #     errors["fixing_par_global"] = "Pas de fixing par envoie global"
+
+            # try:
+            # Tableau devant recevoir les IDs des Achat items se trouvant dans FixingDetail
+            tab_id_achat_item = []
+            if fixings_detail.values('achat_items').exists():
+                id_achat_items = fixings_detail.values('achat_items')
+                if id_achat_items is not None:
+                    for id_achat_item in id_achat_items:
+                        if id_achat_item['achat_items'] is not None:
+                            print("Achat items dans fixing detail:", id_achat_item)
+                            tab_id_achat_item.append(id_achat_item['achat_items'])
+                        # else:
+                        #     print("Achat items dans fixing detail est null")
+
+                    """Faire la somme des poids des AchatItems envoyés par barre (Envoie Par Barre ou Items)"""
+                    achat_items = AchatItems.objects.filter(id__in=tab_id_achat_item)
+                    somme_poids_achat_items = achat_items.aggregate(
+                        somme_poids_achat_item=Sum('poids_achat')
+                    )['somme_poids_achat_item']
+                    if somme_poids_achat_items is not None:
+                        somme_poids_items = somme_poids_achat_items
+            # except IndexError:
+            #     errors["fixing_par_barres"] = "Pas de fixing envoyés par barre"
+
+            """
+                Faire la somme des poids calculé dans FixingDetail a travers l'ID du Fixing,
+                Ensuite comparé au Poids fixé dans Fixing
+            """
+
+            poids_total_fixing_dans_fixing_detail = float(somme_poids_items) + float(somme_poids_selected) + float(
+                poids_total_achats)
+
+            print("\nPoids Total Calculé =", poids_total_fixing_dans_fixing_detail)
+            if poids_total_fixing_dans_fixing_detail == poids_fixe_dans_fixing:
+                reponse = {
+                    "poids_total_fixing_dans_fixing_detail": poids_total_fixing_dans_fixing_detail,
+                    "poids_fixe_dans_fixing": poids_fixe_dans_fixing,
+                    "valeur_identique": True,
+                }
+                return Response(reponse)
+            else:
+                reponse = {
+                    "poids_total_fixing_dans_fixing_detail": poids_total_fixing_dans_fixing_detail,
+                    "poids_fixe_dans_fixing": poids_fixe_dans_fixing,
+                    "valeur_identique": False,
+                }
+                return Response(reponse)
+            # except IndexError:
+            #     response = {"message": "Le Fixing d'id "+str(pk)+" est introuvable"}
+            #     return Response(response, status=status.HTTP_404_NOT_FOUND)
+            # except ValueError:
+            #     response = {"message": "L'id doit etre de type entier"}
+            #     return Response(response)
+        else:
+            response = {"message": "Veuillez fournir l'id du Fixing"}
+            return Response(response, status=status.HTTP_204_NO_CONTENT)
+
+        # message = {"message": "it's working"}
+        # return Response(message, status=status.HTTP_200_OK)
+
     def get_queryset(self):
-        id_fixing = self.request.query_params.get('id_fixing')
-        if id_fixing is not None:
-            print("Id Fixing =", id_fixing)
-            fixings_detail = FixingDetail.objects.filter(fixing=id_fixing)
-            somme_poids_select = fixings_detail.aggregate(somme_poids_select=Sum('poids_select'))
-            print("Les fixing detail:", fixings_detail)
-
-
-            # for achat in achat_all:
-            #     # Vérifier si l'achat n'existe pas dans FixingDetail
-            #     if not FixingDetail.objects.filter(achat=achat, type_envoie=2).exists():
-            #         achat_pas_dans_fixing_detail.append(achat)
-            # print(achat_pas_dans_fixing_detail)
-            # return achat_pas_dans_fixing_detail
+        pass
 
 
 class FactureFournisseurViewSet(viewsets.ModelViewSet):
