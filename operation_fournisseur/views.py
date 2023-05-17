@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.db.models import Sum
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -172,7 +172,7 @@ class AchatViewSet(viewsets.ModelViewSet):
         serializer.save(updated_at=date_time)
 
 
-class AchatItemsVieSet(viewsets.ModelViewSet):
+class AchatItemsViewSet(viewsets.ModelViewSet):
     queryset = AchatItems.objects.all()
     serializer_class = AchatItemsSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
@@ -212,25 +212,51 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
                 msg = {"message": "Aucun item pour cet achat"}
                 return None
 
-            return achat_items
+            # return achat_items
 
-        # Recuperer les AchataItems qui ne se trouvent pas dans FixingDetail
-        # en se basant sur l'id de l'achat
-        id_achat = self.request.query_params.get('id_achat')
-        if id_achat is not None:
-            # print("Achat id =", id_achat)
-            achat_items_all = AchatItems.objects.filter(achat=id_achat)
-            achat_items_pas_dans_fixing_detail = []
+    @action(detail=True, methods=['GET'])
+    def get_achat_items_by_achat(self, request, pk=None, *args, **kwargs):
 
-            for achat_item in achat_items_all:
-                # Vérifier si l'item n'existe pas dans FixingDetail
-                # Et puis l'ajouter dans le tableau
-                if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
-                    achat_items_pas_dans_fixing_detail.append(achat_item)
-            # print(achat_items_pas_dans_fixing_detail)
-            return achat_items_pas_dans_fixing_detail
+        # # Recuperer les AchataItems qui ne se trouvent pas dans FixingDetail
+        # # en se basant sur l'id de l'achat
+        # id_achat = self.request.query_params.get('id_achat')
+        if pk is not None:
+            try:
+                achat_items_all = AchatItems.objects.filter(achat=pk)
 
-        return queryset.filter(item_used=False)
+                achat_items_pas_dans_fixing_detail = []
+                try:
+                    achats = FixingDetail.objects.filter(achat=pk).values('achat_id', 'type_envoie')
+                    type_envoie = achats[0]['type_envoie']
+                    if type_envoie == 3:
+                        somme_poids = achats.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
+                        response = {
+                            "data": [],
+                            "type_envoie": type_envoie,
+                            "somme_poids": somme_poids
+                        }
+                        return Response(response, status=status.HTTP_200_OK)
+
+                except IndexError:
+                    type_envoie = 0
+
+                for achat_item in achat_items_all:
+                    # Vérifier si l'item n'existe pas dans FixingDetail
+                    # Et puis l'ajouter dans le tableau
+                    if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
+                        instance = AchatItemsSerializer(achat_item)
+                        achat_items_pas_dans_fixing_detail.append(instance.data)
+                response = {
+                    "data": achat_items_pas_dans_fixing_detail,
+                    "type_envoie": type_envoie
+                }
+                return Response(response, status=status.HTTP_200_OK)
+            except IndexError:
+                response = {"message": "Auccune barre trouvée dans cet Achat"}
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+            except ValueError:
+                response = {"message": "l'id doit etre un entier"}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_update(self, serializer):
         # id_item = self.request.query_params('')
@@ -241,12 +267,6 @@ class AchatItemsVieSet(viewsets.ModelViewSet):
         # req_data = self.request.data
         # serializer.save(updated_by=self.request.user, updated_at=date_time)
         serializer.save(updated_at=date_time)
-
-    # def partial_update(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     ids = request.data.get('id')
-    #     objects = self.get
-    #     return "OK"
 
 
 class CompteFournisseurViewSet(viewsets.ModelViewSet):
