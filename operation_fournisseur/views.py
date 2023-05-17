@@ -23,31 +23,12 @@ class FournisseurViewSet(viewsets.ModelViewSet):
 
     # authentication_classes = [TokenAuthentication]
 
-    @action(detail=True, methods=['POST'])
-    def add_fournisseur(self, request, pk=None, *args, **kwargs):
-        serializer = FournisseurSerializer(data=request.data, many=True)
-        if serializer.is_valid():
-            for item_data in serializer.validated_data:
-                FixingDetail.objects.create(
-                    nom=item_data['nom'], prenom=item_data['prenom'], pays=item_data['pays'],
-                    ville=item_data['ville'], adresse=item_data['adresse'], telephone=item_data['telephone'],
-                    email=item_data['email'], created_by=request.user
-                )
-
-            response = {
-                "message": "Fournisseur créé avec succès",
-                "instance": serializer.data
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def perform_create(self, serializer):
         """Create new Fournisseur"""
         user = self.request.user
         print("User est :", user)
-        serializer.save(created_by=user)
-        # serializer.save()
+        # serializer.save(created_by=user)
+        serializer.save()
 
     # @action(detail=True, methods=['PUT'])
     # def update(self, request, *args, **kwargs):
