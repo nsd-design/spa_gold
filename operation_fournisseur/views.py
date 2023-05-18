@@ -193,8 +193,6 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                 msg = {"message": "Aucun item pour cet achat"}
                 return None
 
-            # return achat_items
-
     @action(detail=True, methods=['GET'])
     def get_achat_items_by_achat(self, request, pk=None, *args, **kwargs):
 
@@ -238,6 +236,17 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
             except ValueError:
                 response = {"message": "l'id doit etre un entier"}
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['GET'])
+    def achat_items_by_achat(self, request, pk, *args, **kwargs):
+        if pk is not None:
+            try:
+                achat_items = AchatItems.objects.filter(achat=pk)
+                instances = AchatItemsSerializer(achat_items, many=True)
+                return Response(instances.data, status=status.HTTP_200_OK)
+            except IndexError:
+                response = {"message": "Aucune barre attribuée à cet achat"}
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
 
     def perform_update(self, serializer):
         # id_item = self.request.query_params('')
@@ -513,9 +522,6 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
         else:
             response = {"message": "Veuillez fournir l'id du Fixing"}
             return Response(response, status=status.HTTP_204_NO_CONTENT)
-
-        # message = {"message": "it's working"}
-        # return Response(message, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         pass
