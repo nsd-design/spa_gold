@@ -285,6 +285,32 @@ class LotArrivageViewSet(viewsets.ModelViewSet):
     serializer_class = LotArrivageSerializer
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
+    @action(detail=True, methods=['GET'])
+    def get_achat_items(self, request, pk, *args, **kwargs):
+        if pk is not None:
+            # Rechercher le Lot d'id = pk
+            lot = get_object_or_404(LotArrivage, pk=pk)
+            try:
+                attributions = Attribution.objects.filter(arrivage=lot)
+                achats_attribues = attributions.values('achat')
+
+                # Tableau devant recevoir l'id des achats trouvés dans le Lot
+                id_achats = []
+                for achat in achats_attribues:
+                    id_achats.append(achat['achat'])
+                print("Tab id achats", id_achats)
+
+                # Recuperer les items de chaque Achat trouvé dans AchatItems
+                items_by_achat = AchatItems.objects.filter(achat__in=id_achats)
+
+                # Serialisé le resultat de la requete 'items_by_achat' pour pouvoir l'envoyer
+                serialized = AchatItemsSerializer(items_by_achat, many=True)
+                response = {"data": serialized.data}
+                return Response(response, status.HTTP_200_OK)
+            except IndexError:
+                response = {"message": "Aucun achat attribué à ce Lot"}
+                return Response(response, status.HTTP_404_NOT_FOUND)
+
 
 class AttributionViewSet(viewsets.ModelViewSet):
     queryset = Attribution.objects.filter()
@@ -524,7 +550,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             return Response(response, status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
-        pass
+        fixing_details = get_list_or_404(FixingDetail)
+        return fixing_details
 
 
 class FactureFournisseurViewSet(viewsets.ModelViewSet):
