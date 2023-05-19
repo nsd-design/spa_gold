@@ -2,7 +2,7 @@ import decimal
 import json
 from datetime import datetime
 
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.utils import timezone
@@ -551,6 +551,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         fixing_details = get_list_or_404(FixingDetail)
+        grouper = FixingDetail.objects.all().annotate(fixing_count=Count('fixing_id'))
+        print("Groupe by Fixing", grouper)
         return fixing_details
 
 
@@ -569,3 +571,50 @@ class CaisseViewSet(viewsets.ModelViewSet):
         user = self.request.user
         # serializer.save(created_by=user)
         serializer.save()
+
+    @action(detail=True, methods=['GET'], name="Situation fournisseur")
+    def situation_fournisseur(self, request, pk=None):
+        if pk is not None:
+            caisse_fournisseur = Caisse.objects.filter(fournisseur=pk)
+            # print("Caisse fournisseur", caisse_fournisseur)
+            caisse_fournisseur_ser = CaisseSerializer(caisse_fournisseur, many=True)
+            # fixing_details = FixingDetail.objects.filter(fournisseur=pk)
+            # fixing_details_ser = FixingDetailSerializer(fixing_details, many=True)
+            # print(fixing_details)
+            # response = {"caisse_fournisseur": caisse_fournisseur_ser.data, "fixing_detail": fixing_details_ser.data}
+
+            id_achat_items = FixingDetail.objects.filter(fournisseur=pk).values('achat_items', 'fixing__fixing_bourse',
+                                                                                'fixing__discompte'
+                                                                                ).exclude(achat_items=None)
+            tab_achat_items = []
+
+            print("les id achat items", id_achat_items)
+            for achat_item in id_achat_items:
+                item = AchatItems.objects.get(pk=achat_item['achat_items'])
+                prix_unit = (decimal.Decimal(achat_item['fixing__fixing_bourse']) / 34) - decimal.Decimal(achat_item['fixing__discompte'])
+                achat_items = {"poids_item": item.poids_achat,
+                               "carrat": item.carrat_achat, "manquant": item.manquant,
+                               "fixing_bourse": achat_item['fixing__fixing_bourse'],
+                               "discounte": achat_item['fixing__discompte'],
+                               "prix_unit": prix_unit,
+                               }
+                tab_achat_items.append(achat_items)
+            print("Les items", tab_achat_items)
+
+            # Recuperer les poids
+            poids_item = FixingDetail.objects.filter(fournisseur=pk).values('poids_select', 'achat__carrat_moyen',
+                                                                            'fixing__fixing_bourse',
+                                                                            'fixing__discompte',
+                                                                            ).exclude(poids_select=None)
+
+            for item in poids_item:
+                prix_unit = item['fixing__fixing_bourse'] / 34 - item['fixing__discompte']
+                fixing_item = {"poids_item": item['poids_select'],
+                               "carrat": item['achat__carrat_moyen'], "manquant": 0,
+                               "fixing_bourse": item['fixing__fixing_bourse'],
+                               "discounte": item['fixing__discompte'],
+                               "prix_unit": prix_unit,
+                               }
+                tab_achat_items.append(fixing_item)
+            response = {"caisse_fournisseur": caisse_fournisseur_ser.data, "fixing_detail": tab_achat_items}
+            return Response(response, status.HTTP_200_OK)
