@@ -562,53 +562,46 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             date_fixing_detail, fournisseur, poids_total achat, fixing_bourse, fixing poids, discount,
             poids vendu
         """
-        try:
-            fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
-                'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse', 'fournisseur',
-                'achat__poids_total', 'fixing__discompte', 'created_at'
-            ).annotate(
-                nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
-                poids_select=ArrayAgg('poids_select')
-            ).order_by('-created_at')
-            # print("Fixing valides", fixing_valides)
+        fixing_valides = FixingDetail.objects.values(
+            'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fournisseur',
+            'achat__poids_total', 'fixing__discompte', 'created_at'
+        ).annotate(
+            nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
+            poids_select=ArrayAgg('poids_select')
+        ).order_by('-created_at')
+        # print("Fixing valides", fixing_valides)
 
-            for fixing_valide in fixing_valides:
-                tab_items = fixing_valide['achat_item']
-                if tab_items[0] is not None:
-                    somme_poids_items = 0
-                    tab_achat_items = []
-                    for i in range(0, len(tab_items)):
-                        # print("Parcours s-tab i =", tab_items[i])
-                        qs = AchatItems.objects.get(pk=tab_items[i])
-                        somme_poids_items += qs.poids_achat
-                        # qs_combine = qs_combine.union(qs)
-                        poids = qs.poids_achat
-                        carrat = qs.carrat_achat
-                        manquant = qs.manquant
-                        info_item = {
-                            "poids": poids,
-                            "carrat": carrat,
-                            "manquant": manquant,
-                        }
-                        # print("QS value", qs)
-                        # print("Dict", info_item)
-                        tab_achat_items.append(info_item)
+        for fixing_valide in fixing_valides:
+            tab_items = fixing_valide['achat_item']
+            if tab_items[0] is not None:
+                somme_poids_items = 0
+                tab_achat_items = []
+                for i in range(0, len(tab_items)):
+                    # print("Parcours s-tab i =", tab_items[i])
+                    qs = AchatItems.objects.get(pk=tab_items[i])
+                    somme_poids_items += qs.poids_achat
+                    # qs_combine = qs_combine.union(qs)
+                    poids = qs.poids_achat
+                    carrat = qs.carrat_achat
+                    manquant = qs.manquant
+                    info_item = {
+                        "poids": poids,
+                        "carrat": carrat,
+                        "manquant": manquant,
+                    }
+                    # print("QS value", qs)
+                    # print("Dict", info_item)
+                    tab_achat_items.append(info_item)
 
-                    tab_achat_items.append(somme_poids_items)
-                    # print("tab to insert", tab_achat_items)
-                # print("fixing detail parcouru", fixing_valide['achat_item'])
-                    fixing_valide['achat_item'] = tab_achat_items
-                else:
-                    print("Poids select de Item", fixing_valide['poids_select'])
+                tab_achat_items.append(somme_poids_items)
+                # print("tab to insert", tab_achat_items)
+            # print("fixing detail parcouru", fixing_valide['achat_item'])
+                fixing_valide['achat_item'] = tab_achat_items
+            else:
+                print("Poids select de Item", fixing_valide['poids_select'])
 
-                # print("f valides", fixing_valides)
-            return Response(fixing_valides, status.HTTP_200_OK)
-        except IndexError:
-            response = {"message": "Aucun Fixing validé"}
-            Response(response, status.HTTP_404_NOT_FOUND)
-        except ValueError:
-            response = {"message": "L'id de l'utilisateur doit etre un nombre entier"}
-            return Response(response, status.HTTP_400_BAD_REQUEST)
+            # print("f valides", fixing_valides)
+        return Response(fixing_valides, status.HTTP_200_OK)
 
     def get_queryset(self):
         fixing_details = get_list_or_404(FixingDetail)
