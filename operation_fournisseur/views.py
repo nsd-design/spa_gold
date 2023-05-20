@@ -1,7 +1,9 @@
 import decimal
 import json
+import random
 from datetime import datetime
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
@@ -344,11 +346,14 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             print("Id achat", serializer.data[0]['achat']['id'])
             id_achat = int(serializer.data[0]['achat']['id'])
             achat_cloture = False
+            ordre_validation = random.randint(1, 9999999999)
+            print("Ordere de validation genere", ordre_validation)
             for fixing_detail in serializer.validated_data:
                 FixingDetail.objects.create(
                     achat=fixing_detail['achat'], achat_items=fixing_detail['achat_items'],
                     fournisseur=fixing_detail['fournisseur'], fixing=fixing_detail['fixing'],
                     type_envoie=fixing_detail['type_envoie'],
+                    ordre_validation=ordre_validation,
                     created_by=fixing_detail['created_by']
                 )
 
@@ -549,10 +554,58 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             response = {"message": "Veuillez fournir l'id du Fixing"}
             return Response(response, status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=['GET'])
+    def fixing_valide(self, request, pk=None):
+        #   A filtrer par Utilisateur, pk doit contenir
+        #   l'id de l'Utilisateur
+        """
+            date_fixing_detail, fournisseur, poids_total achat, fixing_bourse, fixing poids, discount,
+            poids vendu
+        """
+        fixing_valides = FixingDetail.objects.values(
+            'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fournisseur',
+            'achat__poids_total', 'fixing__discompte', 'created_at'
+        ).annotate(
+            nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
+            poids_select=ArrayAgg('poids_select')
+        ).order_by('-created_at')
+        # print("Fixing valides", fixing_valides)
+
+        for fixing_valide in fixing_valides:
+            tab_items = fixing_valide['achat_item']
+            if tab_items[0] is not None:
+                somme_poids_items = 0
+                tab_achat_items = []
+                for i in range(0, len(tab_items)):
+                    # print("Parcours s-tab i =", tab_items[i])
+                    qs = AchatItems.objects.get(pk=tab_items[i])
+                    somme_poids_items += qs.poids_achat
+                    # qs_combine = qs_combine.union(qs)
+                    poids = qs.poids_achat
+                    carrat = qs.carrat_achat
+                    manquant = qs.manquant
+                    info_item = {
+                        "poids": poids,
+                        "carrat": carrat,
+                        "manquant": manquant,
+                    }
+                    # print("QS value", qs)
+                    # print("Dict", info_item)
+                    tab_achat_items.append(info_item)
+
+                tab_achat_items.append(somme_poids_items)
+                # print("tab to insert", tab_achat_items)
+            # print("fixing detail parcouru", fixing_valide['achat_item'])
+                fixing_valide['achat_item'] = tab_achat_items
+            else:
+                print("Poids select de Item", fixing_valide['poids_select'])
+
+            # print("f valides", fixing_valides)
+        return Response(fixing_valides, status.HTTP_200_OK)
+
     def get_queryset(self):
         fixing_details = get_list_or_404(FixingDetail)
-        grouper = FixingDetail.objects.all().annotate(fixing_count=Count('fixing_id'))
-        print("Groupe by Fixing", grouper)
+        # grouper = FixingDetail.objects.all().annotate(fixing_count=Count('fixing_id'))
         return fixing_details
 
 
