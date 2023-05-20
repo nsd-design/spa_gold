@@ -566,7 +566,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
         if pk is not None:
             try:
                 fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
-                    'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fournisseur',
+                    'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse', 'fournisseur',
                     'achat__poids_total', 'fixing__discompte', 'created_at'
                 ).annotate(
                     nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
