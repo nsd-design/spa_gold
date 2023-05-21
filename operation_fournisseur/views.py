@@ -567,7 +567,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             try:
                 fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
                     'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse', 'fournisseur',
-                    'achat__poids_total', 'fixing__discompte', 'created_at'
+                    'achat__poids_total', 'achat__carrat_moyen', 'fixing__discompte', 'created_at'
                 ).annotate(
                     nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
                     poids_select=ArrayAgg('poids_select')
@@ -576,7 +576,10 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
 
                 for fixing_valide in fixing_valides:
                     tab_items = fixing_valide['achat_item']
-                    if tab_items[0] is not None:
+                    # if not fixing_valide['achat_item'].__contains__(None):
+
+                    if not tab_items.__contains__(None):
+                        print("Les liste de items", tab_items)
                         somme_poids_items = 0
                         tab_achat_items = []
                         for i in range(0, len(tab_items)):
