@@ -386,7 +386,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, serializer):
-        serializer.save()
+        ordre_validation = random.randint(1, 9999999999)
+        serializer.save(ordre_validation=ordre_validation)
         type_envoie = serializer.data['type_envoie']
         poids_total_achat = decimal.Decimal(serializer.data['achat']['poids_total'])
         print(poids_total_achat)
@@ -556,13 +557,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['GET'])
     def fixing_valide(self, request, pk=None):
-        #   A filtrer par Utilisateur, pk doit contenir
-        #   l'id de l'Utilisateur
-        """
-            date_fixing_detail, fournisseur, poids_total achat, fixing_bourse, fixing poids, discount,
-            poids vendu
-
-        """
+        #   A filtrer par Utilisateur, pk contient l'id de l'Utilisateur
         if pk is not None:
             try:
                 fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
@@ -572,42 +567,104 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
                     poids_select=ArrayAgg('poids_select')
                 ).order_by('-created_at')
-                # print("Fixing valides", fixing_valides)
+
+                # Liste devant recevoir les dictionnaire des fixing detail regroupés par ordre de validation
+                list_fixing_valides = []
 
                 for fixing_valide in fixing_valides:
                     tab_items = fixing_valide['achat_item']
+                    poids_select = fixing_valide['poids_select']
                     # if not fixing_valide['achat_item'].__contains__(None):
 
-                    if not tab_items.__contains__(None):
-                        print("Les liste de items", tab_items)
-                        somme_poids_items = 0
-                        tab_achat_items = []
-                        for i in range(0, len(tab_items)):
-                            # print("Parcours s-tab i =", tab_items[i])
-                            qs = AchatItems.objects.get(pk=tab_items[i])
-                            somme_poids_items += qs.poids_achat
-                            # qs_combine = qs_combine.union(qs)
-                            poids = qs.poids_achat
-                            carrat = qs.carrat_achat
-                            manquant = qs.manquant
-                            info_item = {
-                                "poids": poids,
-                                "carrat": carrat,
-                                "manquant": manquant,
-                            }
-                            # print("QS value", qs)
-                            # print("Dict", info_item)
-                            tab_achat_items.append(info_item)
+                    # Filtre la liste tab_items pour retirer toutes les valeurs None
 
-                        tab_achat_items.append(somme_poids_items)
-                        # print("tab to insert", tab_achat_items)
-                    # print("fixing detail parcouru", fixing_valide['achat_item'])
-                        fixing_valide['achat_item'] = tab_achat_items
+                    val = None
+                    my_tab_items = list(filter(lambda item: item != val, tab_items))
+
+                    tab_poids_select = list(filter(lambda poids: poids != val, poids_select))
+
+                    # Variable pour faire la somme des poids des AchatItems se trouvant dans FixingDetail
+                    # utilisé pour la validation du Fixing
+                    somme_poids_items = 0
+                    # Tableau devant recevoir les infos de chaque AchatItems dans FixingDetail
+                    tab_achat_items = []
+                    for i in range(0, len(my_tab_items)):
+                        print("tab_item de i", my_tab_items[i])
+                        qs = AchatItems.objects.get(pk=my_tab_items[i])
+                        somme_poids_items += qs.poids_achat
+                        info_item = {
+                            "poids": qs.poids_achat,
+                            "carrat": qs.carrat_achat,
+                            "manquant": qs.manquant,
+                        }
+                        # Ajouter chaque AchatItem ou barre dans le tableau suivit de la somme
+                        # de leurs Poids
+                        tab_achat_items.append(info_item)
+                    tab_achat_items.append(somme_poids_items)
+                    if not tab_poids_select:
+                        # Dictionnaire de Fixing validé par Barre
+                        fixing_valides_dict = {
+                            "nom": fixing_valide['fournisseur__nom'],
+                            "prenom": fixing_valide['fournisseur__prenom'],
+                            "poids_fixe": fixing_valide['fixing__poids_fixe'],
+                            "fixing_bourse": fixing_valide['fixing__fixing_bourse'],
+                            "fournisseur": fixing_valide['fournisseur'],
+                            "achat_poids_total": fixing_valide['achat__poids_total'],
+                            "achat_carrat_moyen": fixing_valide['achat__carrat_moyen'],
+                            "fixing_discompte": fixing_valide['fixing__discompte'],
+                            "created_at": fixing_valide['created_at'],
+                            "nb_valide": fixing_valide['nb_valide'],
+                            "achat_item": tab_achat_items
+                        }
+                        list_fixing_valides.append(fixing_valides_dict)
+                    elif not my_tab_items:
+                        # Dictionnaire de Fixing validé par Poids
+                        fixing_valides_dict = {
+                            "nom": fixing_valide['fournisseur__nom'],
+                            "prenom": fixing_valide['fournisseur__prenom'],
+                            "poids_fixe": fixing_valide['fixing__poids_fixe'],
+                            "fixing_bourse": fixing_valide['fixing__fixing_bourse'],
+                            "fournisseur": fixing_valide['fournisseur'],
+                            "achat_poids_total": fixing_valide['achat__poids_total'],
+                            "achat_carrat_moyen": fixing_valide['achat__carrat_moyen'],
+                            "fixing_discompte": fixing_valide['fixing__discompte'],
+                            "created_at": fixing_valide['created_at'],
+                            "nb_valide": fixing_valide['nb_valide'],
+                            "poids_select": tab_poids_select
+                        }
+                        list_fixing_valides.append(fixing_valides_dict)
                     else:
-                        print("Poids select de Item", fixing_valide['poids_select'])
+                        # Dictionnaire de Fixing validé par Barre et par Poids
+                        fixing_valides_dict = {
+                            "nom": fixing_valide['fournisseur__nom'],
+                            "prenom": fixing_valide['fournisseur__prenom'],
+                            "poids_fixe": fixing_valide['fixing__poids_fixe'],
+                            "fixing_bourse": fixing_valide['fixing__fixing_bourse'],
+                            "fournisseur": fixing_valide['fournisseur'],
+                            "achat_poids_total": fixing_valide['achat__poids_total'],
+                            "achat_carrat_moyen": fixing_valide['achat__carrat_moyen'],
+                            "fixing_discompte": fixing_valide['fixing__discompte'],
+                            "created_at": fixing_valide['created_at'],
+                            "nb_valide": fixing_valide['nb_valide'],
+                            "achat_item": tab_achat_items
+                        }
+                        list_fixing_valides.append(fixing_valides_dict)
+                        fixing_valides_dict = {
+                            "nom": fixing_valide['fournisseur__nom'],
+                            "prenom": fixing_valide['fournisseur__prenom'],
+                            "poids_fixe": fixing_valide['fixing__poids_fixe'],
+                            "fixing_bourse": fixing_valide['fixing__fixing_bourse'],
+                            "fournisseur": fixing_valide['fournisseur'],
+                            "achat_poids_total": fixing_valide['achat__poids_total'],
+                            "achat_carrat_moyen": fixing_valide['achat__carrat_moyen'],
+                            "fixing_discompte": fixing_valide['fixing__discompte'],
+                            "created_at": fixing_valide['created_at'],
+                            "nb_valide": fixing_valide['nb_valide'],
+                            "poids_select": tab_poids_select
+                        }
+                        list_fixing_valides.append(fixing_valides_dict)
 
-                    # print("f valides", fixing_valides)
-                return Response(fixing_valides, status.HTTP_200_OK)
+                return Response(list_fixing_valides, status.HTTP_200_OK)
             except IndexError:
                 response = {"message": "Aucun fixing valide trouvé"}
                 return Response(response, status=status.HTTP_404_NOT_FOUND)
