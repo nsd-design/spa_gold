@@ -194,6 +194,7 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                 print("Aucun item pour cet achat")
                 msg = {"message": "Aucun item pour cet achat"}
                 return None
+        return queryset
 
     @action(detail=True, methods=['GET'])
     def get_achat_items_by_achat(self, request, pk=None, *args, **kwargs):
