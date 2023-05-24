@@ -176,6 +176,7 @@ class FixingDetail(models.Model):
     type_envoie = models.IntegerField(choices=types_envoie)
     poids_select = models.DecimalField(max_digits=18, decimal_places=2, null=True)
     ordre_validation = models.BigIntegerField(null=True, blank=True)
+    carrat_moyen_restant = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
 

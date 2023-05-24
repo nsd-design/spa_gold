@@ -349,12 +349,19 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             achat_cloture = False
             ordre_validation = random.randint(1, 9999999999)
             print("Ordere de validation genere", ordre_validation)
+
+            while True:
+                if FixingDetail.filter(ordre_validation=ordre_validation).exists():
+                    ordre_validation = random.randint(1, 9999999999)
+                else:
+                    break
+
             for fixing_detail in serializer.validated_data:
                 FixingDetail.objects.create(
                     achat=fixing_detail['achat'], achat_items=fixing_detail['achat_items'],
                     fournisseur=fixing_detail['fournisseur'], fixing=fixing_detail['fixing'],
                     type_envoie=fixing_detail['type_envoie'],
-                    ordre_validation=ordre_validation,
+                    ordre_validation=ordre_validation, carrat_moyen_restant=['carrat_moyen_restant'],
                     created_by=fixing_detail['created_by']
                 )
 
@@ -566,7 +573,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     'achat__poids_total', 'achat__carrat_moyen', 'fixing__discompte', 'created_at'
                 ).annotate(
                     nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
-                    poids_select=ArrayAgg('poids_select')
+                    poids_select=ArrayAgg('poids_select'), carrat_moyen_restant=ArrayAgg('carrat_moyen_restant')
                 ).order_by('-created_at')
 
                 # Liste devant recevoir les dictionnaire des fixing detail regroupés par ordre de validation
@@ -575,6 +582,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                 for fixing_valide in fixing_valides:
                     tab_items = fixing_valide['achat_item']
                     poids_select = fixing_valide['poids_select']
+                    carrat_moyen_restant = fixing_valide['carrat_moyen_restant']
                     # if not fixing_valide['achat_item'].__contains__(None):
 
                     # Filtre la liste tab_items pour retirer toutes les valeurs None
@@ -583,6 +591,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     my_tab_items = list(filter(lambda item: item != val, tab_items))
 
                     tab_poids_select = list(filter(lambda poids: poids != val, poids_select))
+
+                    tab_carrat_moyen_restant = list(filter(lambda carrat: carrat != val, carrat_moyen_restant))
 
                     # Variable pour faire la somme des poids des AchatItems se trouvant dans FixingDetail
                     # utilisé pour la validation du Fixing
@@ -631,7 +641,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                             "fixing_discompte": fixing_valide['fixing__discompte'],
                             "created_at": fixing_valide['created_at'],
                             "nb_valide": fixing_valide['nb_valide'],
-                            "poids_select": tab_poids_select
+                            "poids_select": tab_poids_select,
+                            "carrat_moyen_restant": tab_carrat_moyen_restant,
                         }
                         list_fixing_valides.append(fixing_valides_dict)
                     else:
@@ -661,7 +672,8 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                             "fixing_discompte": fixing_valide['fixing__discompte'],
                             "created_at": fixing_valide['created_at'],
                             "nb_valide": fixing_valide['nb_valide'],
-                            "poids_select": tab_poids_select
+                            "poids_select": tab_poids_select,
+                            "carrat_moyen_restant": tab_carrat_moyen_restant,
                         }
                         list_fixing_valides.append(fixing_valides_dict)
 
