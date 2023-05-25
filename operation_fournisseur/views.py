@@ -147,6 +147,19 @@ class AchatViewSet(viewsets.ModelViewSet):
                     return qs
         return queryset
 
+    @action(detail=True, methods=['GET'])
+    def achat_by_lot(self, request, pk=None):
+        if pk is not None:
+            list_achat = Attribution.objects.filter(arrivage=pk).values('achat')
+            if list_achat is not None:
+                achats_by_lot = Achat.objects.filter(id__in=list_achat)
+                serializer = AchatSerializer(achats_by_lot, many=True)
+                response = {"data": serializer.data}
+                return Response(response, status=status.HTTP_200_OK)
+            else:
+                response = {"message": "Aucun Achat n'a été trouvé pour ce Lot"}
+                return Response(response, status.HTTP_404_NOT_FOUND)
+
     def perform_update(self, serializer):
         date_time = timezone.now()
         req = self.request.query_params
@@ -242,6 +255,7 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['GET'])
     def achat_items_by_achat(self, request, pk, *args, **kwargs):
+        # Recuperer tous les AchatItems d'un achat, le parametre pk reçoit l'id de l'Achat
         if pk is not None:
             try:
                 achat_items = AchatItems.objects.filter(achat=pk)
@@ -351,7 +365,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
             print("Ordere de validation genere", ordre_validation)
 
             while True:
-                if FixingDetail.filter(ordre_validation=ordre_validation).exists():
+                if FixingDetail.objects.filter(ordre_validation=ordre_validation).exists():
                     ordre_validation = random.randint(1, 9999999999)
                 else:
                     break
@@ -361,7 +375,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     achat=fixing_detail['achat'], achat_items=fixing_detail['achat_items'],
                     fournisseur=fixing_detail['fournisseur'], fixing=fixing_detail['fixing'],
                     type_envoie=fixing_detail['type_envoie'],
-                    ordre_validation=ordre_validation, carrat_moyen_restant=['carrat_moyen_restant'],
+                    ordre_validation=ordre_validation,
                     created_by=fixing_detail['created_by']
                 )
 

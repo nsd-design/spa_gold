@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from operation_fournisseur.serializers import FournisseurSerializer, AchatItemsSerializer
+from operation_fournisseur.serializers import FournisseurSerializer, AchatSerializer, AchatItemsSerializer, LotArrivageSerializer
 from utilisateurs.serializers import UtilisateurSerializer
 from .models import *
 
@@ -60,14 +60,14 @@ class FactureExpeditionSerializer(serializers.ModelSerializer):
 
 
 class ExpeditionSerializer(serializers.ModelSerializer):
-    client_exp = serializers.PrimaryKeyRelatedField(queryset=Expedition.objects.all(), required=False)
+    client_exp = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all(), required=False)
     created_by = serializers.PrimaryKeyRelatedField(queryset=Utilisateur.objects.all(), required=False)
-
+    
     def to_representation(self, instance):
-        self.fields['client_exp'] = ExpeditionSerializer()
+        self.fields['client_exp'] = ClientSerializer()
         self.fields['created_by'] = UtilisateurSerializer()
         return super(ExpeditionSerializer, self).to_representation(instance)
-
+    
     class Meta:
         model = Expedition
         fields = '__all__'

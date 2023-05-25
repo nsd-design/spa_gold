@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from operation_fournisseur.models import Fournisseur, Achat, AchatItems
+from operation_fournisseur.models import Fournisseur, Achat, AchatItems, LotArrivage
 from utilisateurs.models import Utilisateur
 
 
@@ -101,12 +101,22 @@ class Expedition(models.Model):
         (2, "Validée"),
         (3, "Annulée"),
     ]
+
+    types_envoie = [
+        (1, "Lot"),
+        (2, "Achat"),
+        (3, "Details")
+    ]
+
+    lot_exp = models.ForeignKey(LotArrivage, null=True, blank=True, on_delete=models.CASCADE)
     client_exp = models.ForeignKey(Client, on_delete=models.CASCADE)
+    achat_items = models.OneToOneField(AchatItems, on_delete=models.CASCADE)
+    type_envoie = models.IntegerField(choices=types_envoie)
+    code_exp = models.BigIntegerField(null=True)
     status = models.IntegerField(choices=status_values, default=1, null=False)
-    facture_exp = models.ForeignKey(FactureExpedition, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(Utilisateur, related_name='created_expeditions', null=True, on_delete=models.CASCADE)
-    updated_at = models.DateTimeField(null=True)
+    updated_at = models.DateField(null=True)
     updated_by = models.ForeignKey(Utilisateur, related_name='updated_expeditions', null=True, on_delete=models.CASCADE)
 
 
