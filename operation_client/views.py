@@ -70,7 +70,7 @@ class ExpeditionViewSet(viewsets.ModelViewSet):
         try:
             expeditions = Expedition.objects.filter(created_by=pk).values(
                 'lot_exp__designation', 'client_exp__raison_sociale', 'client_exp__responsable',
-                'type_envoie', 'status', 'created_at'
+                'type_envoie', 'status', 'created_at', 'code_exp'
             ).annotate(nb=Count('code_exp'), achat_items=ArrayAgg('achat_items'))
             # List devant recevoir le dictionnair customisé de chaque regroupement de l'expedition
             tab_expedition = []

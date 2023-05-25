@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 
+from operation_client.models import Expedition
 from utilisateurs.models import Utilisateur
 from .serializers import *
 from django.core import serializers
@@ -24,6 +25,26 @@ class FournisseurViewSet(viewsets.ModelViewSet):
     allowed_methods = ['GET', 'POST', 'PUT', 'DELETE']
 
     # authentication_classes = [TokenAuthentication]
+
+    @action(detail=True, methods=['GET'])
+    def situation_stock(self, request, pk=None):
+        # Recuperer l'id des AchatItems existant dans FixingDetail
+        items_in_fixing_detail = FixingDetail.objects.values('achat_items')
+        qs_item = AchatItems.objects.filter(pk__in=items_in_fixing_detail)
+        # Faire la somme des poids des AchatItems trouvés dans FixingDetail
+        poids_in_fixing_detail = qs_item.aggregate(somme_poids_item=Sum('poids_achat'))['somme_poids_item']
+        print("somme poids in fixing detail", poids_in_fixing_detail)
+
+        # Recuperer les AchatItems existant dans Expedition, puis faire la somme de leurs poids
+        poids_items_in_expedition = Expedition.objects.values(
+            'achat_items').aggregate(somme_poids_item=Sum('achat_items__poids_achat'))['somme_poids_item']
+        situation = {
+            "poids_dans_fixing_detail": poids_in_fixing_detail,
+            "poids_dans_expedition": poids_items_in_expedition,
+            "poids_actif": poids_in_fixing_detail - poids_items_in_expedition,
+        }
+
+        return Response(situation, status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         """Create new Fournisseur"""
