@@ -805,9 +805,9 @@ class CaisseViewSet(viewsets.ModelViewSet):
             # Recuperer les poids
             poids_item = FixingDetail.objects.filter(fournisseur=pk).values('poids_select', 'achat__carrat_moyen',
                                                                             'fixing__fixing_bourse',
-                                                                            'fixing__discompte',
+                                                                            'fixing__discompte', 'created_at'
                                                                             ).exclude(poids_select=None)
-
+            print("poids item", poids_item)
             for item in poids_item:
                 print("item detail aosie lasjioef")
                 prix_unit = item['fixing__fixing_bourse'] / 34 - item['fixing__discompte']
