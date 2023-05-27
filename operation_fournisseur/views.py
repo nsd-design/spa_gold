@@ -4,7 +4,8 @@ import random
 from datetime import datetime
 
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, DateField
+from django.db.models.functions import Cast
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.utils import timezone
@@ -256,6 +257,30 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                 except IndexError:
                     type_envoie = 0
 
+                # Recuperer les achats items se trouvant dans FixingDetail pour calculer la somme de leurs poids
+                items_in_fixing_detail = FixingDetail.objects.filter(achat=pk)
+                # Les items du FixingDetail envoyé par Barre
+                envoi_par_barre = items_in_fixing_detail.filter(type_envoie=1).values('achat_items')
+                # Les items du FixingDetail envoyé par Poids dont l'achat => pk
+                envoi_par_poids = items_in_fixing_detail.filter(type_envoie=3)
+
+                # Poids Total des AchatItems dans FixingDetail dont l'achat => pk
+                poids_achat_items = AchatItems.objects.filter(pk__in=envoi_par_barre).aggregate(
+                    somme_poids_items=Sum('poids_achat')
+                )['somme_poids_items']
+
+                somme_poids_achat_in_fxing_detail = envoi_par_poids.aggregate(
+                    somme_poids=Sum('poids_select'))['somme_poids']
+
+                # Calculer le Poids Total de l'achat
+                poids_total = 0
+                if poids_achat_items is not None and somme_poids_achat_in_fxing_detail is not None:
+                    poids_total = poids_achat_items + somme_poids_achat_in_fxing_detail
+                elif somme_poids_achat_in_fxing_detail is None:
+                    poids_total = poids_achat_items
+                elif poids_achat_items is None:
+                    poids_total = somme_poids_achat_in_fxing_detail
+
                 for achat_item in achat_items_all:
                     # Vérifier si l'item n'existe pas dans FixingDetail
                     # Et puis l'ajouter dans le tableau
@@ -264,7 +289,8 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                         achat_items_pas_dans_fixing_detail.append(instance.data)
                 response = {
                     "data": achat_items_pas_dans_fixing_detail,
-                    "type_envoie": type_envoie
+                    "type_envoie": type_envoie,
+                    "poids_vendu": poids_total
                 }
                 return Response(response, status=status.HTTP_200_OK)
             except IndexError:
@@ -604,9 +630,9 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
         if pk is not None:
             try:
                 fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
-                    'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse', 'fournisseur',
-                    'achat__poids_total', 'achat__carrat_moyen', 'fixing__discompte', 'created_at'
-                ).annotate(
+                    'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse',
+                    'fournisseur', 'achat__poids_total', 'achat__carrat_moyen', 'fixing__discompte', 'created_at'
+                ).annotate(created_date=Cast('created_at', output_field=DateField()),
                     nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
                     poids_select=ArrayAgg('poids_select'), carrat_moyen_restant=ArrayAgg('carrat_moyen_restant')
                 ).order_by('-created_at')
@@ -757,12 +783,13 @@ class CaisseViewSet(viewsets.ModelViewSet):
             # response = {"caisse_fournisseur": caisse_fournisseur_ser.data, "fixing_detail": fixing_details_ser.data}
 
             id_achat_items = FixingDetail.objects.filter(fournisseur=pk).values('achat_items', 'fixing__fixing_bourse',
-                                                                                'fixing__discompte'
+                                                                                'fixing__discompte', 'created_at'
                                                                                 ).exclude(achat_items=None)
             tab_achat_items = []
 
             print("les id achat items", id_achat_items)
             for achat_item in id_achat_items:
+                print("achat item detail", achat_item)
                 item = AchatItems.objects.get(pk=achat_item['achat_items'])
                 prix_unit = (decimal.Decimal(achat_item['fixing__fixing_bourse']) / 34) - decimal.Decimal(achat_item['fixing__discompte'])
                 achat_items = {"poids_item": item.poids_achat,
@@ -770,6 +797,7 @@ class CaisseViewSet(viewsets.ModelViewSet):
                                "fixing_bourse": achat_item['fixing__fixing_bourse'],
                                "discounte": achat_item['fixing__discompte'],
                                "prix_unit": prix_unit,
+                               "created_at": achat_item['created_at']
                                }
                 tab_achat_items.append(achat_items)
             print("Les items", tab_achat_items)
@@ -781,12 +809,14 @@ class CaisseViewSet(viewsets.ModelViewSet):
                                                                             ).exclude(poids_select=None)
 
             for item in poids_item:
+                print("item detail aosie lasjioef")
                 prix_unit = item['fixing__fixing_bourse'] / 34 - item['fixing__discompte']
                 fixing_item = {"poids_item": item['poids_select'],
                                "carrat": item['achat__carrat_moyen'], "manquant": 0,
                                "fixing_bourse": item['fixing__fixing_bourse'],
                                "discounte": item['fixing__discompte'],
                                "prix_unit": prix_unit,
+                               "created_at": item['created_at'],
                                }
                 tab_achat_items.append(fixing_item)
             response = {"caisse_fournisseur": caisse_fournisseur_ser.data, "fixing_detail": tab_achat_items}
