@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Sum, Count, DateField
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.utils import timezone
@@ -243,56 +243,59 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
 
                 achat_items_pas_dans_fixing_detail = []
                 try:
-                    achats = FixingDetail.objects.filter(achat=pk).values('achat_id', 'type_envoie')
-                    type_envoie = achats[0]['type_envoie']
-                    if type_envoie == 3:
-                        somme_poids = achats.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
+                    achats_fixing_detail = FixingDetail.objects.filter(achat=pk).values('achat_id', 'type_envoie')
+
+                    # Recuperer les achats items se trouvant dans FixingDetail pour calculer la somme de leurs poids
+                    # Les items du FixingDetail envoyé par Barre
+                    envoi_par_barre = achats_fixing_detail.filter(type_envoie=1).values('achat_items')
+                    # Les items du FixingDetail envoyé par Poids dont l'achat => pk
+                    envoi_par_poids = achats_fixing_detail.filter(type_envoie=3)
+
+                    # Poids Total des AchatItems dans FixingDetail dont l'achat => pk
+                    poids_achat_items = AchatItems.objects.filter(pk__in=envoi_par_barre).aggregate(
+                        somme_poids_items=Sum('poids_achat')
+                    )['somme_poids_items']
+
+                    somme_poids_achat_in_fxing_detail = envoi_par_poids.aggregate(
+                        somme_poids=Sum('poids_select'))['somme_poids']
+
+                    # Calculer Total Poids vendu de l'achat
+                    poids_total = 0
+                    if poids_achat_items is not None and somme_poids_achat_in_fxing_detail is not None:
+                        poids_total = poids_achat_items + somme_poids_achat_in_fxing_detail
+                    elif somme_poids_achat_in_fxing_detail is None:
+                        poids_total = poids_achat_items
+                    elif poids_achat_items is None:
+                        poids_total = somme_poids_achat_in_fxing_detail
+
+                    if achats_fixing_detail.filter(type_envoie=3).exists():
+
+                        for achat_item in achat_items_all:
+                            # Vérifier si l'item n'existe pas dans FixingDetail
+                            # Et puis l'ajouter dans le tableau
+                            if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
+                                instance = AchatItemsSerializer(achat_item)
+                                achat_items_pas_dans_fixing_detail.append(instance.data)
+
+                        somme_poids = achats_fixing_detail.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
                         response = {
-                            "data": [],
-                            "type_envoie": type_envoie,
-                            "somme_poids": somme_poids
+                            "data": achat_items_pas_dans_fixing_detail,
+                            "type_envoie": 3,
+                            "poids_vendu": poids_total
+                        }
+                        return Response(response, status=status.HTTP_200_OK)
+                    else:
+                        response = {
+                            "data": achat_items_pas_dans_fixing_detail,
+                            "type_envoie": 1,
+                            "poids_vendu": poids_total
                         }
                         return Response(response, status=status.HTTP_200_OK)
 
                 except IndexError:
-                    type_envoie = 0
+                    response = {"message": "Auccune barre validée dans cet Achat"}
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
 
-                # Recuperer les achats items se trouvant dans FixingDetail pour calculer la somme de leurs poids
-                items_in_fixing_detail = FixingDetail.objects.filter(achat=pk)
-                # Les items du FixingDetail envoyé par Barre
-                envoi_par_barre = items_in_fixing_detail.filter(type_envoie=1).values('achat_items')
-                # Les items du FixingDetail envoyé par Poids dont l'achat => pk
-                envoi_par_poids = items_in_fixing_detail.filter(type_envoie=3)
-
-                # Poids Total des AchatItems dans FixingDetail dont l'achat => pk
-                poids_achat_items = AchatItems.objects.filter(pk__in=envoi_par_barre).aggregate(
-                    somme_poids_items=Sum('poids_achat')
-                )['somme_poids_items']
-
-                somme_poids_achat_in_fxing_detail = envoi_par_poids.aggregate(
-                    somme_poids=Sum('poids_select'))['somme_poids']
-
-                # Calculer le Poids Total de l'achat
-                poids_total = 0
-                if poids_achat_items is not None and somme_poids_achat_in_fxing_detail is not None:
-                    poids_total = poids_achat_items + somme_poids_achat_in_fxing_detail
-                elif somme_poids_achat_in_fxing_detail is None:
-                    poids_total = poids_achat_items
-                elif poids_achat_items is None:
-                    poids_total = somme_poids_achat_in_fxing_detail
-
-                for achat_item in achat_items_all:
-                    # Vérifier si l'item n'existe pas dans FixingDetail
-                    # Et puis l'ajouter dans le tableau
-                    if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
-                        instance = AchatItemsSerializer(achat_item)
-                        achat_items_pas_dans_fixing_detail.append(instance.data)
-                response = {
-                    "data": achat_items_pas_dans_fixing_detail,
-                    "type_envoie": type_envoie,
-                    "poids_vendu": poids_total
-                }
-                return Response(response, status=status.HTTP_200_OK)
             except IndexError:
                 response = {"message": "Auccune barre trouvée dans cet Achat"}
                 return Response(response, status=status.HTTP_404_NOT_FOUND)
@@ -628,15 +631,22 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
     def fixing_valide(self, request, pk=None):
         #   A filtrer par Utilisateur, pk contient l'id de l'Utilisateur
         if pk is not None:
+            fixing_details = FixingDetail.objects.filter(created_by=pk)
+            print("avant extract date", fixing_details)
+            for fd in fixing_details:
+                fd.created_at = datetime.date(fd.created_at)
+                print("FV========", )
+            print("Apres extract date", fixing_details)
             try:
-                fixing_valides = FixingDetail.objects.filter(created_by=pk).values(
+                print("Dans try", fixing_details)
+                fixing_valides = fixing_details.values(
                     'fournisseur__nom', 'fournisseur__prenom', 'fixing__poids_fixe', 'fixing__fixing_bourse',
                     'fournisseur', 'achat__poids_total', 'achat__carrat_moyen', 'fixing__discompte', 'created_at'
-                ).annotate(created_date=Cast('created_at', output_field=DateField()),
-                    nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
-                    poids_select=ArrayAgg('poids_select'), carrat_moyen_restant=ArrayAgg('carrat_moyen_restant')
-                ).order_by('-created_at')
-
+                ).annotate(
+                           nb_valide=Count('ordre_validation'), achat_item=ArrayAgg('achat_items'),
+                           poids_select=ArrayAgg('poids_select'), carrat_moyen_restant=ArrayAgg('carrat_moyen_restant')
+                           ).order_by('-created_at')
+                print("fixing valide", fixing_valides)
                 # Liste devant recevoir les dictionnaire des fixing detail regroupés par ordre de validation
                 list_fixing_valides = []
 
@@ -644,6 +654,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     tab_items = fixing_valide['achat_item']
                     poids_select = fixing_valide['poids_select']
                     carrat_moyen_restant = fixing_valide['carrat_moyen_restant']
+                    print("Date Tab", fixing_valide['created_at'].date())
                     # if not fixing_valide['achat_item'].__contains__(None):
 
                     # Filtre la liste tab_items pour retirer toutes les valeurs None
@@ -661,7 +672,7 @@ class FixingDetailViewSet(viewsets.ModelViewSet):
                     # Tableau devant recevoir les infos de chaque AchatItems dans FixingDetail
                     tab_achat_items = []
                     for i in range(0, len(my_tab_items)):
-                        print("tab_item de i", my_tab_items[i])
+                        # print("tab_item de i", my_tab_items[i])
                         qs = AchatItems.objects.get(pk=my_tab_items[i])
                         somme_poids_items += qs.poids_achat
                         info_item = {
@@ -791,7 +802,8 @@ class CaisseViewSet(viewsets.ModelViewSet):
             for achat_item in id_achat_items:
                 print("achat item detail", achat_item)
                 item = AchatItems.objects.get(pk=achat_item['achat_items'])
-                prix_unit = (decimal.Decimal(achat_item['fixing__fixing_bourse']) / 34) - decimal.Decimal(achat_item['fixing__discompte'])
+                prix_unit = (decimal.Decimal(achat_item['fixing__fixing_bourse']) / 34) - decimal.Decimal(
+                    achat_item['fixing__discompte'])
                 achat_items = {"poids_item": item.poids_achat,
                                "carrat": item.carrat_achat, "manquant": item.manquant,
                                "fixing_bourse": achat_item['fixing__fixing_bourse'],

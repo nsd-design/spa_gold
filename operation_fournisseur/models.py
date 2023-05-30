@@ -181,7 +181,7 @@ class FixingDetail(models.Model):
     created_by = models.ForeignKey(Utilisateur, related_name='created_fixing_detail', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Achat: {self.achat}, Poids: {self.poids_select}"
+        return f"Achat: {self.achat}, Poids: {self.poids_select} Date {self.created_at}"
 
 
 class FactureFournisseur(models.Model):
