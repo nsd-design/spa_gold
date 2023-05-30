@@ -251,6 +251,14 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                     # Les items du FixingDetail envoyé par Poids dont l'achat => pk
                     envoi_par_poids = achats_fixing_detail.filter(type_envoie=3)
 
+                    # Recuperer les achats items ne se trouvant pas dans fixing detail
+                    for achat_item in achat_items_all:
+                        # Vérifier si l'item n'existe pas dans FixingDetail
+                        # Et puis l'ajouter dans le tableau
+                        if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
+                            instance = AchatItemsSerializer(achat_item)
+                            achat_items_pas_dans_fixing_detail.append(instance.data)
+
                     # Poids Total des AchatItems dans FixingDetail dont l'achat => pk
                     poids_achat_items = AchatItems.objects.filter(pk__in=envoi_par_barre).aggregate(
                         somme_poids_items=Sum('poids_achat')
@@ -270,14 +278,7 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
 
                     if achats_fixing_detail.filter(type_envoie=3).exists():
 
-                        for achat_item in achat_items_all:
-                            # Vérifier si l'item n'existe pas dans FixingDetail
-                            # Et puis l'ajouter dans le tableau
-                            if not FixingDetail.objects.filter(achat_items=achat_item.id).exists():
-                                instance = AchatItemsSerializer(achat_item)
-                                achat_items_pas_dans_fixing_detail.append(instance.data)
-
-                        somme_poids = achats_fixing_detail.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
+                        # somme_poids = achats_fixing_detail.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
                         response = {
                             "data": achat_items_pas_dans_fixing_detail,
                             "type_envoie": 3,
