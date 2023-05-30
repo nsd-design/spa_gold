@@ -277,7 +277,7 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                         poids_total = somme_poids_achat_in_fxing_detail
 
                     if achats_fixing_detail.filter(type_envoie=3).exists():
-
+                        print("non utilise type envoi 3", achat_items_pas_dans_fixing_detail)
                         # somme_poids = achats_fixing_detail.aggregate(somme_poids=Sum('poids_select'))['somme_poids']
                         response = {
                             "data": achat_items_pas_dans_fixing_detail,
@@ -285,13 +285,22 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                             "poids_vendu": poids_total
                         }
                         return Response(response, status=status.HTTP_200_OK)
-                    else:
+                    elif achats_fixing_detail.filter(type_envoie=1).exists():
+                        print("non utilise", achat_items_pas_dans_fixing_detail)
+                        print("poids vendu", poids_total)
                         response = {
                             "data": achat_items_pas_dans_fixing_detail,
                             "type_envoie": 1,
                             "poids_vendu": poids_total
                         }
                         return Response(response, status=status.HTTP_200_OK)
+                    # Renvoyer tous les items de l'achat s'il n'a aucune barre validée
+                    response = {
+                        "data": achat_items_all,
+                        "type_envoie": None,
+                        "poids_vendu": 0
+                    }
+                    return Response(response, status=status.HTTP_200_OK)
 
                 except IndexError:
                     response = {"message": "Auccune barre validée dans cet Achat"}
