@@ -295,10 +295,13 @@ class AchatItemsViewSet(viewsets.ModelViewSet):
                         }
                         return Response(response, status=status.HTTP_200_OK)
                     # Renvoyer tous les items de l'achat s'il n'a aucune barre validée
-                    # Serialiser les items
-                    achat_item_ser = AchatItemsSerializer(achat_items_all, many=True)
+                    # Serialiser les items un par un puis ajouter dans le tableau 'achat_items'
+                    achat_items = []
+                    for achat_item in achat_items_all:
+                        instance = AchatItemsSerializer(achat_item)
+                        achat_items.append(instance.data)
                     response = {
-                        "data": achat_item_ser.data,
+                        "data": achat_items,
                         "type_envoie": None,
                         "poids_vendu": 0
                     }
